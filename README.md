@@ -1,6 +1,6 @@
-# Godot Open RPG
+# Godot 4 Open RPG
 
-![Godot Open RPG banner](img/Open-RPG.png)
+![Godot Open RPG banner](media/Open-RPG.png)
 
 OpenRPG is a tool and a demo to create Role Playing Games with turn-based combat.
 
@@ -8,9 +8,7 @@ OpenRPG is a tool and a demo to create Role Playing Games with turn-based combat
 
 _Looking for a Zelda-like game? Check out our [Open Source A-RPG demo](https://github.com/GDquest/make-pro-2d-games-with-godot/)._
 
-![Combat system screenshot](https://i.imgur.com/RvrBrvR.jpg)
-
-## Our mission
+## Our Mission
 
 Together, we're creating a codebase and tools to show you some of the best practices to create:
 
@@ -22,7 +20,7 @@ Together, we're creating a codebase and tools to show you some of the best pract
 
 And more! Do you want to contribute and improve your programming skills with Godot? Check out the open issues, suggest improvements and report bugs by opening new ones, and be sure to check the contributing guidelines below.
 
-### The current project's scope
+### Our Goal
 
 Our initial goal is to create a mini-demo with the full combat loop, character experience, skills, some pretty art, and basic map navigation and conversation with NPCs.
 
@@ -30,4 +28,4 @@ Our initial goal is to create a mini-demo with the full combat loop, character e
 
 All contributors are welcome 🙂. To ensure a smooth and a productive experience for everyone working together, we came up with some guidelines we all follow here.
 
-Check our [Contributors Guide](https://www.gdquest.com/docs/guidelines/contributing-to/gdquest-projects/) for more information 😄
+Check our [Contributors Guide](https://gdquest.gitbook.io/gdquests-guidelines/contributing-to-gdquest-projects/) for more information 😄
