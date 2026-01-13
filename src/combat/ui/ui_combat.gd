@@ -60,8 +60,6 @@ func setup(battler_data: BattlerRoster) -> void:
 	
 	# If a player battler has been selected, the action menu should open so that the player may
 	# choose an action.
-	# If the selected Battler had already queued an action, the player must rechoose that
-	# action.
 	CombatEvents.player_battler_selected.connect(
 		func _on_player_battler_selected(battler: Battler) -> void:
 			# Reset the action description bar.
@@ -78,20 +76,6 @@ func setup(battler_data: BattlerRoster) -> void:
 				var empty_target_array: Array[Battler] = []
 				CombatEvents.action_selected.emit(null, _selected_battler, empty_target_array)
 	)
-	
-	# If there is a change in Battler states (for now, only consider a change in health points),
-	# re-evaluate the targeting cursor's target list, if the cursor is currently active.
-	for battler in _battlers.get_battlers():
-		battler.stats.health_changed.connect(_on_battler_health_changed)
-	
-	# If a player Battler dies while the player is selecting an action or choosing targets, signal
-	# that the targeting cursor/menu should close.
-	for battler in _battlers.get_player_battlers():
-		battler.health_depleted.connect(
-			(func _on_player_battler_health_depleted(downed_battler: Battler):
-				if downed_battler == _selected_battler:
-					CombatEvents.player_battler_selected.emit(null)).bind(battler)
-		)
 
 
 func _create_action_menu() -> void:
@@ -101,18 +85,16 @@ func _create_action_menu() -> void:
 	_action_menu_anchor.add_child(action_menu)
 	action_menu.setup(_selected_battler, _battlers)
 	
-	# On combat end, remove the action menu immediately.
-	_battlers.battlers_downed.connect(action_menu.fade_out)
-	
-	# Link the action menu to the action description bar.
+	# Link the action menu to the action description bar, providing a description of the
+	# highlighted action.
 	action_menu.action_focused.connect(
 		func _on_action_focused(action: BattlerAction) -> void:
 			_action_description.description = action.description
 	)
 	
 	# The action builder will wait until the player selects an action or presses 'back'.
-	# Selecting an action will trigger the following signal, whereas pressing 'back'
-	# will close the menu directly and deselect the current battler.
+	# Selecting an action will trigger the following signal, whereas pressing 'back' will try to
+	# return action selection to the previous player Battler.
 	action_menu.action_selected.connect(
 		func _on_action_selected(action: BattlerAction) -> void:
 			_selected_action = action
@@ -128,9 +110,6 @@ func _create_targeting_cursor() -> void:
 	_cursor.targets_all = _selected_action.targets_all()
 	_cursor.targets = _selected_action.get_possible_targets(_selected_battler, _battlers)
 	add_child(_cursor)
-	
-	# On combat end, remove the cursor from the scene tree.
-	_battlers.battlers_downed.connect(_cursor.queue_free)
 	
 	# Finally, connect to the cursor's signals that will indicate that targets have been chosen.
 	_cursor.targets_selected.connect(

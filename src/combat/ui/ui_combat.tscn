@@ -1,7 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://ic0pyjko2i46"]
+[gd_scene load_steps=14 format=3 uid="uid://ic0pyjko2i46"]
 
 [ext_resource type="Script" uid="uid://ch0df68krwxr1" path="res://src/combat/ui/effect_labels/ui_effect_label_builder.gd" id="1_0i21q"]
 [ext_resource type="PackedScene" uid="uid://bo6hj2mg02uef" path="res://src/combat/ui/effect_labels/ui_damage_label.tscn" id="2_0cqaj"]
+[ext_resource type="PackedScene" uid="uid://bipyuaeqoxmt2" path="res://src/combat/ui/action_menu/ui_action_menu.tscn" id="2_nv24v"]
+[ext_resource type="PackedScene" uid="uid://bu56ii26ps128" path="res://src/combat/ui/cursors/ui_battler_target_cursor.tscn" id="3_0i21q"]
 [ext_resource type="PackedScene" uid="uid://dxyw5j7wr56hl" path="res://src/combat/ui/effect_labels/ui_missed_label.tscn" id="3_36thh"]
 [ext_resource type="Script" uid="uid://smjuikb83bkc" path="res://src/combat/ui/ui_combat.gd" id="5_lubpu"]
 [ext_resource type="Script" uid="uid://2bkem6rl5jl6" path="res://src/combat/ui/battler_entry/ui_player_battler_list.gd" id="6_nv24v"]
@@ -120,6 +122,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("5_lubpu")
+action_menu_scene = ExtResource("2_nv24v")
+target_cursor_scene = ExtResource("3_0i21q")
 
 [node name="EffectLabelBuilder" type="Node2D" parent="."]
 script = ExtResource("1_0i21q")

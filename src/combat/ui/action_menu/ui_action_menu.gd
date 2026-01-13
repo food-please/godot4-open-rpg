@@ -15,38 +15,7 @@ signal action_focused(action: BattlerAction)
 # (energy costs, for example).
 # The action menu also needs to respond to Battler state, such as a change in energy points or the
 # Battler's health.
-@export var _battler: Battler:
-	set(value):
-		_battler = value
-		
-		if not is_inside_tree():
-			await ready
-		
-		# If the battler currently choosing the action dies, close and free the menu.
-		_battler.health_depleted.connect(
-			func _on_battler_health_depleted():
-				queue_free()
-				CombatEvents.player_battler_selected.emit(null)
-		)
-		
-		# If the battler's energy levels changed, re-evaluate which actions are available.
-		_battler.stats.energy_changed.connect(
-			func _on_battler_energy_changed():
-				for entry: UIActionButton in _entries:
-					var can_use_action: = _battler.stats.energy >= entry.action.energy_cost
-					entry.disabled = !can_use_action or is_disabled
-		)
-
-## Disables or enables clicking on/navigating to the various entries.
-## Defaults to true, as most menus will animate into existence before being interactable.
-var is_disabled: = true:
-	set(value):
-		is_disabled = value
-		for entry in _entries:
-			entry.disabled = is_disabled
-		
-		focus_first_entry()
-		_menu_cursor.visible = !is_disabled
+@export var _battler: Battler
 
 # Refer to the BattlerRoster to check whether or not an action is valid when it is selected.
 # This allows us to prevent the player from selecting an invalid action.
@@ -58,7 +27,6 @@ var _entries: Array[BaseButton] = []
 @onready var _menu_cursor: = $MenuCursor as UIMenuCursor
 
 
-
 func _ready() -> void:
 	hide()
 	set_process_unhandled_input(false)
@@ -67,9 +35,6 @@ func _ready() -> void:
 # Capture any input events that will signal going "back" in the menu hierarchy.
 # This includes mouse or touch input outside of a menu or pressing the back button/key.
 func _unhandled_input(event: InputEvent) -> void:
-	if is_disabled:
-		return
-	
 	if event.is_action_released("select") or event.is_action_released("back"):
 		queue_free()
 		CombatEvents.player_battler_selected.emit(null)
@@ -81,7 +46,27 @@ func _unhandled_input(event: InputEvent) -> void:
 func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
 	_battler = selected_battler
 	_battler_roster = battler_roster
-	_build_action_menu()
+	
+	# Create the list of action entries, a series of buttons allowing the player to select actions.
+	for action in _battler.actions:
+		#var new_entry = _create_entry() as UIActionButton
+		var new_entry: = entry_scene.instantiate()
+		assert(new_entry is UIActionButton, "Entries to the UIActionMenu must be UIActionButtons!" + 
+			" A non-UIActionButton entry_scene has been specified.")
+		add_child(new_entry)
+		
+		new_entry.action = action
+		new_entry.disabled = _battler.stats.energy < action.energy_cost
+		#new_entry.focus_neighbor_right = "." # Don't allow input to jump to the player battler list.
+		
+		new_entry.focus_entered.connect(_on_entry_focused.bind(new_entry))
+		new_entry.mouse_entered.connect(_on_entry_focused.bind(new_entry))
+		new_entry.pressed.connect(_on_entry_pressed.bind(new_entry))
+		
+		_entries.append(new_entry)
+	
+	_loop_first_and_last_entries()
+	focus_first_entry()
 	
 	show()
 	set_process_unhandled_input(true)
@@ -92,49 +77,6 @@ func focus_first_entry() -> void:
 	if not _entries.is_empty():
 		_entries[0].grab_focus()
 		_menu_cursor.position = _entries[0].global_position + Vector2(0.0, _entries[0].size.y/2.0)
-
-
-# Populate the menu with a list of actions.
-func _build_action_menu() -> void:
-	for action in _battler.actions:
-		var can_use_action: = _battler.stats.energy >= action.energy_cost
-		
-		var new_entry = _create_entry() as UIActionButton
-		new_entry.action = action
-		new_entry.disabled = !can_use_action or is_disabled
-		new_entry.focus_neighbor_right = "." # Don't allow input to jump to the player battler list.
-		
-		new_entry.focus_entered.connect(
-			(func _on_action_entry_focused(entry_action: BattlerAction) -> void:
-				if not is_disabled:
-					action_focused.emit(entry_action)).bind(action)
-		)
-	
-	_loop_first_and_last_entries()
-
-
-# Creates a button entry, based on the specified entry scene. Hooks up automatic callbacks to the
-# button's signals that may be modified depending on the specific menu.
-# Returns the created entry so that a menu may add additional functionality to the entry.
-func _create_entry() -> BaseButton:
-	var new_entry: = entry_scene.instantiate()
-	assert(new_entry is BaseButton, "Entries to a UIMenuList must be derived from BaseButton!" + 
-		" A non-BaseButton entry_scene has been specified.")
-	add_child(new_entry)
-	
-	# We're going to keep these as independent functions rather than inline lambdas, since each menu
-	# will probably respond to these events differently. For example, a target menu will want to
-	# highlight a specific battler when a new entry is focusd and an action menu will want to
-	# forward which action was selected.
-	new_entry.focus_entered.connect(_on_entry_focused.bind(new_entry))
-	new_entry.mouse_entered.connect(_on_entry_focused.bind(new_entry))
-	new_entry.pressed.connect(_on_entry_pressed.bind(new_entry))
-	
-	_entries.append(new_entry)
-	
-	if is_disabled:
-		new_entry.disabled = true
-	return new_entry
 
 
 func _loop_first_and_last_entries() -> void:
@@ -154,8 +96,9 @@ func _loop_first_and_last_entries() -> void:
 
 # Moves the [UIMenuCursor] to the focused entry. Derivative menus may want to add additional
 # behaviour.
-func _on_entry_focused(entry: BaseButton) -> void:
+func _on_entry_focused(entry: UIActionButton) -> void:
 	_menu_cursor.move_to(entry.global_position + Vector2(0.0, entry.size.y/2.0))
+	action_focused.emit(entry.action)
 
 
 # Override the base method to allow the player to select an action for the specified Battler.
