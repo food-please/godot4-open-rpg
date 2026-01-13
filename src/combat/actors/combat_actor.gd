@@ -14,7 +14,7 @@
 ## For example, a player-controlled actor would show the action menu UI, while an AI enemy
 ## might have different attack patterns or decision-making logic.
 @abstract
-class_name CombatActor extends Node2D
+extends Node2D
 
 ## Emitted whenever the actor's turn is finished. You should emit this only
 ## after all actions and animations are complete.
@@ -35,10 +35,6 @@ const GROUP: = "combat_actors"
 
 ## Describes whether or not the CombatActor has taken a turn during this combat round.
 var has_acted_this_round: = false
-
-
-static func sort(a: CombatActor, b: CombatActor) -> bool:
-	return a.initiative > b.initiative
 
 
 func _ready() -> void:

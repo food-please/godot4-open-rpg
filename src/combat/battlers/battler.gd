@@ -8,9 +8,9 @@
 @tool
 class_name Battler extends Node2D
 
-
-## Emitted when the battler finished their action and arrived back at their rest position.
-signal action_finished
+## Emitted whenever the Battler's turn is finished. Thos should emit only after all actions and 
+## animations are complete.
+signal turn_finished
 ## Forwarded from the receiving of [signal BettlerStats.health_depleted].
 signal health_depleted
 ## Emitted when taking damage or being healed from a [BattlerHit].
@@ -19,10 +19,6 @@ signal health_depleted
 signal hit_received(value: int)
 ## Emitted whenever a hit targeting this battler misses.
 signal hit_missed
-## Emitted when the battler's `_readiness` changes.
-signal readiness_changed(new_value)
-## Emitted when the battler is ready to take a turn.
-signal ready_to_act
 ## Emitted when modifying `is_selected`. The user interface will react to this for
 ## player-controlled battlers.
 signal selection_toggled(value: bool)
@@ -91,24 +87,10 @@ const GROUP: = "_COMBAT_BATTLER_GROUP"
 				ai = new_instance
 				add_child(ai)
 
-## The [CombatActor] object that will determine the Battler's combat behavior. A Battler without an CombatActor
-## is just a dummy object that will not take turns or perform actions.
-@export var actor_scene: PackedScene:
-	set(value):
-		if value == actor_scene:
-			return
-
-		actor_scene = value
-
-		if not is_inside_tree():
-			await ready
-
-		if actor:
-			actor.queue_free()
-			actor = null
-
-#TODO: Battler.is_player is redundant. Use that defined by CombatActor instead.
-## Player battlers are controlled by the player.
+## If this is [b]true[/b], this actor is controlled by the player. Use this to
+## differentiate between player-controlled actors and AI-controlled ones.
+## [/n][/n] Note that player Battlers may be controlled by an AI controller, but enemy Battlers may
+## not be controlled by the player.
 @export var is_player: = false:
 	set(value):
 		is_player = value
@@ -116,28 +98,18 @@ const GROUP: = "_COMBAT_BATTLER_GROUP"
 			var facing: = BattlerAnim.Direction.LEFT if is_player else BattlerAnim.Direction.RIGHT
 			anim.direction = facing
 
-## Reference to the Battler's child [CombatActor], which controls it's combat behaviour.
-## Note that this value is assigned automatically with reference to [member actor_scene].
-var actor: CombatActor = null
-
 ## Reference to this Battler's child [CombatAI] node, if applicable.
 var ai: CombatAI = null
 
 ## Reference to this Battler's child [BattlerAnim] node.
 var anim: BattlerAnim = null
 
-# TODO: this property belongs with the CombatActor.
-## If `false`, the battler will not be able to act.
+## If this is [b]true[/b], this Battler can take turns.
 var is_active: bool = true:
 	set(value):
 		is_active = value
 
 		set_process(is_active)
-
-## The turn queue will change this property when another battler is acting.
-var time_scale := 1.0:
-	set(value):
-		time_scale = value
 
 ## If `true`, the battler is selected, which makes it move forward.
 var is_selected: bool = false:
@@ -155,25 +127,16 @@ var is_selectable: bool = true:
 		if not is_selectable:
 			is_selected = false
 
-## When this value reaches `100.0`, the battler is ready to take their turn.
-var readiness := 0.0:
-	set(value):
-		readiness = value
-		readiness_changed.emit(readiness)
+## Describes whether or not the Battler has taken a turn during this combat round.
+var has_acted_this_round: = false
 
-		if readiness >= 100.0:
-			readiness = 100.0
-			stats.energy += 1
 
-			ready_to_act.emit()
-			set_process(false)
+static func sort(a: Battler, b: Battler) -> bool:
+	return a.stats.speed > b.stats.speed
 
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
-		set_process(false)
-
-	else:
+	if not Engine.is_editor_hint():
 		assert(stats, "Battler %s does not have stats assigned!" % name)
 
 		add_to_group(GROUP)
@@ -189,25 +152,22 @@ func _ready() -> void:
 		)
 
 
-func _process(delta: float) -> void:
-	readiness += stats.speed * delta * time_scale
+func start_turn() -> void:
+	print(get_parent().name, " starts their turn!")
+
+	await get_tree().create_timer(1.5).timeout
+	turn_finished.emit()
 
 
 func act(action: BattlerAction, targets: Array[Battler] = []) -> void:
-	set_process(false)
-
 	stats.energy -= action.energy_cost
 
-	# action.execute() almost certainly is a coroutine.
+	# action.execute() is almost certainly is a coroutine.
 	@warning_ignore("redundant_await")
 	await action.execute(self, targets)
-	if stats.health > 0:
-		readiness = action.readiness_saved
-
-		if is_active:
-			set_process(true)
-
-	action_finished.emit.call_deferred()
+	
+	has_acted_this_round = true
+	turn_finished.emit.call_deferred()
 
 
 func take_hit(hit: BattlerHit) -> void:
@@ -218,5 +178,10 @@ func take_hit(hit: BattlerHit) -> void:
 		hit_missed.emit()
 
 
-func is_ready_to_act() -> bool:
-	return readiness >= 100.0
+func _to_string() -> String:
+	var msg: = "%s (CombatActor)" % name
+	if not is_active:
+		msg += " - INACTIVE"
+	elif has_acted_this_round:
+		msg += " - HAS ACTED"
+	return msg
