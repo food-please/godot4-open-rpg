@@ -29,6 +29,7 @@ var _entries: Array[BaseButton] = []
 
 func _ready() -> void:
 	hide()
+	_menu_cursor.hide()
 	set_process_unhandled_input(false)
 
 
@@ -66,17 +67,16 @@ func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
 		_entries.append(new_entry)
 	
 	_loop_first_and_last_entries()
-	focus_first_entry()
 	
-	show()
-	set_process_unhandled_input(true)
-
-
-## Bring the first entry into input focus, moving the cursor to its position.
-func focus_first_entry() -> void:
+	# Wait a frame for the menu elements to be setup, then place the cursor at the first entry.
+	await get_tree().process_frame
+	_menu_cursor.show()
 	if not _entries.is_empty():
 		_entries[0].grab_focus()
 		_menu_cursor.position = _entries[0].global_position + Vector2(0.0, _entries[0].size.y/2.0)
+	
+	show()
+	set_process_unhandled_input(true)
 
 
 func _loop_first_and_last_entries() -> void:
