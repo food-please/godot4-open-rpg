@@ -15,6 +15,7 @@ class_name UIPlayerBattlerList extends UIListMenu
 		for child in get_children():
 			if child is UIBattlerEntry:
 				child.queue_free()
+		_entries.clear()
 		
 		# Create a UI entry for each battler in the party.
 		for battler in battlers:

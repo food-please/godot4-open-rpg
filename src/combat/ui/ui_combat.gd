@@ -1,4 +1,4 @@
-## The player combat menus coordinate all player input during the combat game-state.
+## The combat UI coordinates player input during the combat game-state.
 ##
 ## The menus are largely signal driven, which are emitted according to player input. The player is
 ## responsible for issuing [BattlerAction]s to their respective [Battler]s, which are acted out in
@@ -11,7 +11,7 @@
 ## The player may traverse the menus, going backwards and forwards through the menus as needed.
 ## Once the player has picked an action and targets, it is assigned to the queue by means of the
 ## [signal CombatEvents.action_selected] global signal.
-class_name UICombatMenus extends Control
+class_name UICombat extends Control
 
 ## The action menu scene that will be created whenever the player needs to select an action.
 @export var action_menu_scene: PackedScene
@@ -42,14 +42,22 @@ var _selected_action: BattlerAction = null
 # This allows the cursor targets to be updated in real-time as Battler states change.
 var _cursor: UIBattlerTargetingCursor = null
 
-@onready var _action_description: = $ActionDescription as UIActionDescription
-@onready var _action_menu_anchor: = $ActionMenuAnchor as Control
-@onready var _battler_list: = $PlayerBattlerList as UIPlayerBattlerList
+# UI elements - display
+@onready var animation: = $AnimationPlayer as AnimationPlayer
+@onready var _turn_bar: = $TurnBar as UITurnBar
+@onready var _effect_label_builder: = $EffectLabelBuilder as UIEffectLabelBuilder
+
+# UI elements - player menus
+@onready var _action_description: = $PlayerMenus/ActionDescription as UIActionDescription
+@onready var _action_menu_anchor: = $PlayerMenus/ActionMenuAnchor as Control
+@onready var _battler_list: = $PlayerMenus/PlayerBattlerList as UIPlayerBattlerList
 
 
 ## Prepare the menus for use by assigning appropriate [Battler] data.
 func setup(battler_data: BattlerList) -> void:
 	_battlers = battler_data
+	_effect_label_builder.setup(_battlers)
+	_turn_bar.setup(_battlers)
 	_battler_list.setup(_battlers)
 	
 	# If a player battler has been selected, the action menu should open so that the player may

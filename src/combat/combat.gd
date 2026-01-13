@@ -14,11 +14,13 @@ var _active_arena: CombatArena = null
 # Keep track of what music track was playing previously, and return to it once combat has finished.
 var _previous_music_track: AudioStream = null
 
-@onready var _combat_container := $CenterContainer as CenterContainer
-@onready var _transition_delay_timer := $CenterContainer/TransitionDelay as Timer
+@onready var _combat_container: = $CenterContainer as CenterContainer
+@onready var _transition_delay_timer: = $CenterContainer/TransitionDelay as Timer
+@onready var _ui: = $UI as UICombat
 
 
 func _ready() -> void:
+	hide()
 	FieldEvents.combat_triggered.connect(start)
 
 
@@ -29,6 +31,7 @@ func start(arena: PackedScene) -> void:
 	assert(_active_arena == null, "Attempting to start a combat while one is ongoing!")
 
 	await Transition.cover(0.2)
+	show()
 
 	var new_arena := arena.instantiate()
 	assert(
@@ -38,6 +41,7 @@ func start(arena: PackedScene) -> void:
 
 	_active_arena = new_arena
 	_combat_container.add_child(_active_arena)
+	_ui.setup(_active_arena.turn_queue.battlers)
 
 	_previous_music_track = Music.get_playing_track()
 	Music.play(_active_arena.music)
@@ -51,8 +55,8 @@ func start(arena: PackedScene) -> void:
 	await Transition.finished
 	
 	# Fade in the combat UI elements.
-	_active_arena.animation.play("fade_in")
-	await _active_arena.animation.animation_finished
+	_ui.animation.play("fade_in")
+	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
 	_active_arena.start()
@@ -60,12 +64,17 @@ func start(arena: PackedScene) -> void:
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.combat_finished.connect(
 		func on_combat_finished(is_player_victory: bool):
+			# Fade out the combat UI elements.
+			_ui.animation.play("fade_out")
+			await _ui.animation.animation_finished
+			
 			await _display_combat_results_dialog(is_player_victory)
 			
 			# Wait a short period of time and then fade the screen to black.
 			_transition_delay_timer.start()
 			await _transition_delay_timer.timeout
 			await Transition.cover(0.2)
+			hide()
 
 			assert(_active_arena != null, "Combat finished but no active arena to clean up!")
 			_active_arena.queue_free()

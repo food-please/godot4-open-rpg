@@ -10,6 +10,10 @@ const ICON_SCENE: = preload("ui_battler_icon.tscn")
 
 ## Initialize the turn bar, passing in all the battlers that we want to display.
 func setup(battler_data: BattlerList) -> void:
+	# Clear any old elements that may be lingering.
+	for old_icon in _icons.get_children():
+		old_icon.queue_free()
+	
 	for battler in battler_data.get_all_battlers():
 		# Connect a handful of signals to the icon so that it may respond to changes in the
 		# Battler's readiness and fade out if the Battler falls in combat.
