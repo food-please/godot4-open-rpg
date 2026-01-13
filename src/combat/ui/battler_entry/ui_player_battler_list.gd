@@ -22,8 +22,6 @@ class_name UIPlayerBattlerList extends UIListMenu
 			new_entry.battler = battler
 		
 		_loop_first_and_last_entries()
-		
-		fade_in()
 
 
 func _ready() -> void:

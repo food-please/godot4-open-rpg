@@ -314,9 +314,8 @@ size = Vector2(14, 23)
 [node name="Main" type="Node2D"]
 scale = Vector2(5, 5)
 
-[node name="Field" type="Node2D" parent="." node_paths=PackedStringArray("opening_cutscene", "player_default_gamepiece")]
+[node name="Field" type="Node2D" parent="." node_paths=PackedStringArray("player_default_gamepiece")]
 script = ExtResource("2_bkxev")
-opening_cutscene = NodePath("OpeningCutscene")
 player_controller = ExtResource("2_esa52")
 player_default_gamepiece = NodePath("Map/Player")
 

@@ -1,4 +1,4 @@
-## Starts and ends combat, and manages the transition between the field game state and the combat game.
+## Starts and ends combat, and manages the transition between the field and combat states.
 ##
 ## The battle is composed mainly from a [CombatArena], which contains all necessary subelements such
 ## as battlers, visual effects, music, etc.
@@ -39,6 +39,25 @@ func start(arena: PackedScene) -> void:
 	_active_arena = new_arena
 	_combat_container.add_child(_active_arena)
 
+	_previous_music_track = Music.get_playing_track()
+	Music.play(_active_arena.music)
+
+	CombatEvents.combat_initiated.emit()
+
+	# Before starting combat itself, reveal the screen again.
+	# The Transition.clear() call is deferred since it follows on the heels of cover(), and needs a
+	# frame to allow everything else to respond to Transition.finished.
+	Transition.clear.call_deferred(0.2)
+	await Transition.finished
+	
+	# Fade in the combat UI elements.
+	_active_arena.animation.play("fade_in")
+	await _active_arena.animation.animation_finished
+	
+	# Begin the combat logic. The turn queue takes over from here.
+	_active_arena.start()
+	
+	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.combat_finished.connect(
 		func on_combat_finished(is_player_victory: bool):
 			await _display_combat_results_dialog(is_player_victory)
@@ -60,20 +79,6 @@ func start(arena: PackedScene) -> void:
 			# decide what to do now that the outcome of the combat is known.
 			CombatEvents.combat_finished.emit(is_player_victory)
 	)
-
-	_previous_music_track = Music.get_playing_track()
-	Music.play(_active_arena.music)
-
-	CombatEvents.combat_initiated.emit()
-
-	# Before starting combat itself, reveal the screen again.
-	# The Transition.clear() call is deferred since it follows on the heels of cover(), and needs a
-	# frame to allow everything else to respond to Transition.finished.
-	Transition.clear.call_deferred(0.2)
-	await Transition.finished
-
-	# Begin the combat. The turn queue takes over from here.
-	_active_arena.start()
 
 
 ## Displays a series of dialogue bubbles using Dialogic with information about the combat's outcome.

@@ -76,5 +76,5 @@ metadata/_edit_group_ = true
 
 [node name="AnimationPlayer" parent="." index="0"]
 libraries = {
-"": SubResource("AnimationLibrary_22wec")
+&"": SubResource("AnimationLibrary_22wec")
 }

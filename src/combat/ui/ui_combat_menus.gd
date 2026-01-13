@@ -52,8 +52,6 @@ func setup(battler_data: BattlerList) -> void:
 	_battlers = battler_data
 	_battler_list.setup(_battlers)
 	
-	_battlers.battlers_downed.connect(_battler_list.fade_out)
-	
 	# If a player battler has been selected, the action menu should open so that the player may
 	# choose an action.
 	# If the selected Battler had already queued an action, the player must rechoose that

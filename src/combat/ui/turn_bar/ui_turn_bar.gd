@@ -4,19 +4,8 @@ class_name UITurnBar extends Control
 
 const ICON_SCENE: = preload("ui_battler_icon.tscn")
 
-@onready var _anim: = $AnimationPlayer as AnimationPlayer
 @onready var _background: = $Background as TextureRect
 @onready var _icons: = $Background/Icons as Control
-
-
-## Fade in (from transparent) the turn bar and all of its UI elements.
-func fade_in() -> void:
-	_anim.play("fade_in")
-
-
-## Fade out (to transparent) the turn bar and all of its UI elements.
-func fade_out() -> void:
-	_anim.play("fade_out")
 
 
 ## Initialize the turn bar, passing in all the battlers that we want to display.

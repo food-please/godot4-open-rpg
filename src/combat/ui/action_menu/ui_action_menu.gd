@@ -21,7 +21,7 @@ signal action_focused(action: BattlerAction)
 		# If the battler currently choosing the action dies, close and free the menu.
 		_battler.health_depleted.connect(
 			func _on_battler_health_depleted():
-				await close()
+				queue_free()
 				CombatEvents.player_battler_selected.emit(null)
 		)
 		
@@ -50,7 +50,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	
 	if event.is_action_released("select") or event.is_action_released("back"):
-		await close()
+		queue_free()
 		CombatEvents.player_battler_selected.emit(null)
 
 
@@ -63,18 +63,7 @@ func setup(selected_battler: Battler, battler_list: BattlerList) -> void:
 	_build_action_menu()
 	
 	show()
-	fade_in()
-
-
-func fade_in() -> void:
-	await super.fade_in()
 	set_process_unhandled_input(true)
-	
-
-func close() -> void:
-	set_process_unhandled_input(false)
-	await fade_out()
-	queue_free()
 
 
 # Populate the menu with a list of actions.
@@ -111,5 +100,5 @@ func _on_entry_pressed(entry: BaseButton) -> void:
 		return
 	
 	# There are available targets, so the UI can move on to selecting targets.
-	await close()
+	queue_free()
 	action_selected.emit(action)

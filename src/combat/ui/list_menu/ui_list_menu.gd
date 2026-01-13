@@ -23,7 +23,6 @@ var is_disabled: = true:
 # Track all battler list entries in the following array. 
 var _entries: Array[BaseButton] = []
 
-@onready var _anim: = $AnimationPlayer as AnimationPlayer
 @onready var _menu_cursor: = $MenuCursor as UIMenuCursor
 
 
@@ -34,21 +33,22 @@ func focus_first_entry() -> void:
 		_menu_cursor.position = _entries[0].global_position + Vector2(0.0, _entries[0].size.y/2.0)
 
 
+#TODO Remove this code when finished.
 ## Fades in the battler list, allowing input and focusing the first button only after the animation
 ## has finished.
-func fade_in() -> void:
-	_anim.play("fade_in")
-	await _anim.animation_finished
-	is_disabled = false
-	
-	focus_first_entry()
-
-
-## Fades out the battler list, disabling input to the list beforehand.
-func fade_out() -> void:
-	is_disabled = true
-	_anim.play("fade_out")
-	await _anim.animation_finished
+#func fade_in() -> void:
+	#_anim.play("fade_in")
+	#await _anim.animation_finished
+	#is_disabled = false
+	#
+	#focus_first_entry()
+#
+#
+### Fades out the battler list, disabling input to the list beforehand.
+#func fade_out() -> void:
+	#is_disabled = true
+	#_anim.play("fade_out")
+	#await _anim.animation_finished
 
 
 # Creates a button entry, based on the specified entry scene. Hooks up automatic callbacks to the
@@ -98,5 +98,4 @@ func _on_entry_focused(entry: BaseButton) -> void:
 
 ## Hides (and disables) the menu. Derivative menus may want to add additional behaviour.
 func _on_entry_pressed(_entry: BaseButton) -> void:
-	if not is_disabled:
-		fade_out()
+	hide()

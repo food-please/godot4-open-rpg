@@ -9,7 +9,7 @@ class_name CombatArena extends Control
 @onready var turn_queue: = $Battlers as ActiveTurnQueue
 
 # UI elements
-@onready var _ui_animation: = $UI/AnimationPlayer as AnimationPlayer
+@onready var animation: = $UI/AnimationPlayer as AnimationPlayer
 @onready var _ui_turn_bar: = $UI/TurnBar as UITurnBar
 @onready var _ui_effect_label_builder: = $UI/EffectLabelBuilder as UIEffectLabelBuilder
 @onready var _ui_player_menus: = $UI/PlayerMenus as UICombatMenus
@@ -22,19 +22,20 @@ func _ready() -> void:
 	_ui_player_menus.setup(combat_participant_data)
 	_ui_turn_bar.setup(combat_participant_data)
 	
+	# TODO: Remove once I've got things figured out.
 	# The UI elements will automatically fade out once one of the battler teams has lost.
-	combat_participant_data.battlers_downed.connect(
-		func _on_battlers_downed():
-			_ui_player_menus.visible = false
-			_ui_turn_bar.fade_out()
-	)
+	#combat_participant_data.battlers_downed.connect(
+		#func _on_battlers_downed():
+			#_ui_player_menus.visible = false
+			#_ui_turn_bar.fade_out()
+	#)
 
 
 ## Begin combat, setting up the UI before running combat logic.
 func start() -> void:
 	# Smoothly fade in the UI elements.
-	_ui_animation.play("fade_in")
-	await _ui_animation.animation_finished
+	#_ui_animation.play("fade_in")
+	#await _ui_animation.animation_finished
 	
 	# Begin the combat logic.
 	turn_queue.is_active = true
