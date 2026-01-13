@@ -20,12 +20,49 @@ func _ready() -> void:
 	battler_roster = BattlerRoster.new(self)
 
 
-func start() -> void:
-	round_count = 1
-	_next_turn.call_deferred()
+# Combat occurs in two phases: Battlers choose their actions and then act them out. The first phase
+# sees all AI Battlers choose their action, followed by the player. Player actions are chosen by
+# repeatedly calling _select_next_player_action.
+func next_round() -> void:
+	round_count += 1
+	for battler in battler_roster.get_battlers():
+		battler.has_acted_this_round = false
+	
+	for battler in battler_roster.get_enemy_battlers():
+		battler.select_action()
+	
+	_select_next_player_action()
 
 
-func _next_turn() -> void:
+# Player Battlers select their actions by repeatedly calling _select_next_player_action. The method
+# looks for player Battlers who have no cached action and prioritizes those further up in the scene
+# tree. This allows the player to go "backwards" and "forwards" between Battlers, choosing actions
+# and cancelling them as needed.
+# At this point, all AI Battlers should have a cached actoin.
+# Once all Battlers have an action cached (see Battler.cached_action), _select_next_player_action
+# calls _next_turn to move into the second phase.
+func _select_next_player_action() -> void:
+	# Find any remaining player Battlers that need an action selected.
+	var player_battlers: = battler_roster.get_player_battlers()
+	var remaining_battlers: = battler_roster.find_battlers_needing_actions(player_battlers)
+	
+	# If there are no player Battlers needing actions, move on to the second phase of a round:
+	# taking action!
+	if remaining_battlers.is_empty():
+		print("No remaining actions, move to execution.")
+		_play_next_action.call_deferred()
+		return
+	
+	# If there are player Battlers needing cached actions, pick the first one and allow it to search
+	# for an action using either its AI controller (if present) or player input.
+	var next_battler: Battler = remaining_battlers.front()
+	next_battler.action_cached.connect(_select_next_player_action, 
+		CONNECT_DEFERRED | CONNECT_ONE_SHOT)
+
+
+# The second phase of combat has each Battler act in order of speed. This is done by repeatedly
+# calling _next_turn until no active Battlers have a cached action waiting to be executed.
+func _play_next_action() -> void:
 	# Check for battle end conditions, that one side has been downed.
 	if battler_roster.are_battlers_defeated(battler_roster.get_player_battlers()):
 		finished.emit.call_deferred(false)
@@ -36,30 +73,19 @@ func _next_turn() -> void:
 		print("Enemies defeated")
 		return
 
-		# Check for an active actor. If there are none, it may be that the turn has finished and all
-		# actors can have their has_acted_this_round flag reset.
+	# Check for an active Battler. If neither side has lost yet there are no active actors, it's
+	# time to start the next round.
 	var next_actor: = _get_next_actor()
-	if not next_actor:
-		_reset_has_acted_flag()
-
-		# If there is no actor now, there is a situation where the only remaining Battler's don't
-		# have assigned actors. In other words, all controlled actors (player included) are downed.
-		# In this case, register as a player loss.
-		next_actor = _get_next_actor()
-		if not next_actor:
-			finished.emit(false)
-			return
-
-		round_count += 1
-	
-	next_actor.has_acted_this_round = true
+	if next_actor == null:
+		next_round()
+		return
 	
 	# Connect to the actor's turn_finished signal. The actor is guaranteed to emit the signal,
 	# even if it will be freed at the end of this frame.
 	# However, we'll call_defer the next turn, since the current actor may have been downed on its
 	# turn and we need a frame to process the change.
-	next_actor.turn_finished.connect(_next_turn, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
-	next_actor.start_turn()
+	next_actor.turn_finished.connect(_play_next_action, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
+	next_actor.act()
 
 
 func _get_next_actor() -> Battler:
@@ -70,11 +96,6 @@ func _get_next_actor() -> Battler:
 	
 	ready_to_act_battlers.sort_custom(Battler.sort)
 	return ready_to_act_battlers.front()
-
-
-func _reset_has_acted_flag() -> void:
-	for battler in battler_roster.get_battlers():
-		battler.has_acted_this_round = false
 
 
 func _to_string() -> String:

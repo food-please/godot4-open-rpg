@@ -65,7 +65,7 @@ func start(arena: PackedScene) -> void:
 	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
-	_active_arena.turn_queue.start.call_deferred()
+	_active_arena.turn_queue.next_round.call_deferred()
 	
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.finished.connect(

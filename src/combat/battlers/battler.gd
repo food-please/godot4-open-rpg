@@ -8,6 +8,8 @@
 @tool
 class_name Battler extends Node2D
 
+## Emitted whenever the Battler caches a valid action.
+signal action_cached
 ## Emitted whenever the Battler's turn is finished. Thos should emit only after all actions and 
 ## animations are complete.
 signal turn_finished
@@ -130,6 +132,15 @@ var is_selectable: bool = true:
 ## Describes whether or not the Battler has taken a turn during this combat round.
 var has_acted_this_round: = false
 
+## Combat happens in two phases. In the first phase each Battler - player and enemy - select an
+## action. In the second phase that action is carried out.
+## When selecting actions, a Battler caches it in the following memeber.
+var cached_action: BattlerAction = null:
+	set(value):
+		cached_action = value
+		if cached_action != null:
+			action_cached.emit()
+
 
 static func sort(a: Battler, b: Battler) -> bool:
 	return a.stats.speed > b.stats.speed
@@ -152,19 +163,28 @@ func _ready() -> void:
 		)
 
 
-func start_turn() -> void:
-	print(name, " starts their turn!")
+func select_action() -> void:
+	print(name, " looks for an action!")
+	if ai != null:
+		pass
+	
+	elif is_player:
+		pass
 
 	await get_tree().create_timer(1.5).timeout
 	turn_finished.emit()
 
 
-func act(action: BattlerAction, targets: Array[Battler] = []) -> void:
-	stats.energy -= action.energy_cost
+#func act(targets: Array[Battler] = []) -> void:
+func act() -> void:
+	has_acted_this_round = true
+	if cached_action:
+		stats.energy -= cached_action.energy_cost
 
-	# action.execute() is almost certainly is a coroutine.
-	@warning_ignore("redundant_await")
-	await action.execute(self, targets)
+		# cached_action.execute() is almost certainly is a coroutine.
+		@warning_ignore("redundant_await")
+		await cached_action.execute(self, [])
+		#await cached_action.execute(self, targets)
 	
 	turn_finished.emit.call_deferred()
 

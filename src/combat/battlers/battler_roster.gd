@@ -37,6 +37,15 @@ func find_live_battlers(battlers: Array[Battler]) -> Array[Battler]:
 	return battlers.filter(func(battler: Battler): return battler.stats.health > 0)
 
 
+## Filter an array of Battlers to find those who are active but do not yet have a cached action (see
+## [member Battler.cached_action]).
+func find_battlers_needing_actions(battlers: Array[Battler]) -> Array[Battler]:
+	return battlers.filter(
+		func _filter_actors(actor: Battler) -> bool:
+			return actor.is_active and actor.cached_action == null
+	)
+
+
 ## Filter an array of Battlers to find those who may take an action. That is, they are active (see
 ## [member Battler.is_active]) and have not taken a turn yet this round (see
 ## [member Battler.has_acted_this_round]).
