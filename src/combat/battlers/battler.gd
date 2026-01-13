@@ -153,7 +153,7 @@ func _ready() -> void:
 
 
 func start_turn() -> void:
-	print(get_parent().name, " starts their turn!")
+	print(name, " starts their turn!")
 
 	await get_tree().create_timer(1.5).timeout
 	turn_finished.emit()
@@ -166,7 +166,6 @@ func act(action: BattlerAction, targets: Array[Battler] = []) -> void:
 	@warning_ignore("redundant_await")
 	await action.execute(self, targets)
 	
-	has_acted_this_round = true
 	turn_finished.emit.call_deferred()
 
 
@@ -179,7 +178,7 @@ func take_hit(hit: BattlerHit) -> void:
 
 
 func _to_string() -> String:
-	var msg: = "%s (CombatActor)" % name
+	var msg: = "%s (Battler)" % name
 	if not is_active:
 		msg += " - INACTIVE"
 	elif has_acted_this_round:

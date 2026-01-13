@@ -65,11 +65,13 @@ func start(arena: PackedScene) -> void:
 	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
-	#_active_arena.turn_queue.start()
+	_active_arena.turn_queue.start.call_deferred()
 	
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
-	_active_arena.turn_queue.combat_finished.connect(
+	_active_arena.turn_queue.finished.connect(
 		func on_combat_finished(is_player_victory: bool):
+			print("Combat over")
+			
 			# Fade out the combat UI elements.
 			_ui.animation.play("fade_out")
 			await _ui.animation.animation_finished

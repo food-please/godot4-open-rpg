@@ -25,23 +25,19 @@ func start() -> void:
 	_next_turn.call_deferred()
 
 
-func get_actors() -> Array[CombatActor]:
-	var actor_list: Array[CombatActor] = []
-	actor_list.assign(get_tree().get_nodes_in_group(CombatActor.GROUP))
-	return actor_list
-
-
 func _next_turn() -> void:
 	# Check for battle end conditions, that one side has been downed.
 	if battler_roster.are_battlers_defeated(battler_roster.get_player_battlers()):
 		finished.emit.call_deferred(false)
+		print("Player defeated")
 		return
 	elif battler_roster.are_battlers_defeated(battler_roster.get_enemy_battlers()):
 		finished.emit.call_deferred(true)
+		print("Enemies defeated")
 		return
 
 		# Check for an active actor. If there are none, it may be that the turn has finished and all
-		# actors can have their has_acted_this_turn flag reset.
+		# actors can have their has_acted_this_round flag reset.
 	var next_actor: = _get_next_actor()
 	if not next_actor:
 		_reset_has_acted_flag()
@@ -55,44 +51,37 @@ func _next_turn() -> void:
 			return
 
 		round_count += 1
-
+	
+	next_actor.has_acted_this_round = true
+	
 	# Connect to the actor's turn_finished signal. The actor is guaranteed to emit the signal,
 	# even if it will be freed at the end of this frame.
 	# However, we'll call_defer the next turn, since the current actor may have been downed on its
 	# turn and we need a frame to process the change.
-	next_actor.turn_finished.connect(
-		(func _on_actor_turn_finished(actor: CombatActor) -> void:
-				actor.has_acted_this_turn = true
-				_next_turn.call_deferred()).bind(next_actor),
-			CONNECT_ONE_SHOT
-	)
+	next_actor.turn_finished.connect(_next_turn, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 	next_actor.start_turn()
 
 
-func _get_next_actor() -> CombatActor:
-	var actors: = get_actors()
-	actors.sort_custom(CombatActor.sort)
-
-	var ready_to_act_actors: = actors.filter(
-		func _filter_actors(actor: Battler) -> bool:
-			return actor.is_active and not actor.has_acted_this_turn
-	)
-	if ready_to_act_actors.is_empty():
+func _get_next_actor() -> Battler:
+	var battlers: = battler_roster.get_battlers()
+	var ready_to_act_battlers: = battler_roster.find_ready_to_act_battlers(battlers)
+	if ready_to_act_battlers.is_empty():
 		return null
-
-	return ready_to_act_actors.front()
+	
+	ready_to_act_battlers.sort_custom(Battler.sort)
+	return ready_to_act_battlers.front()
 
 
 func _reset_has_acted_flag() -> void:
-	for actor in get_actors():
-		actor.has_acted_this_round = false
+	for battler in battler_roster.get_battlers():
+		battler.has_acted_this_round = false
 
 
 func _to_string() -> String:
-	var actors: = get_actors()
-	actors.sort_custom(CombatActor.sort)
+	var battlers: = battler_roster.get_battlers()
+	battlers.sort_custom(Battler.sort)
 
 	var msg: = "\n%s (CombatTurnQueue) - round %d" % [name, round_count]
-	for actor in actors:
-		msg += "\n\t" + actor.to_string()
+	for battler in battlers:
+		msg += "\n\t" + battler.to_string()
 	return msg

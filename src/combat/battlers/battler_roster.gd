@@ -20,7 +20,7 @@ func get_battlers() -> Array[Battler]:
 func get_player_battlers() -> Array[Battler]:
 	return get_battlers().filter(
 		func _filter_players(battler: Battler):
-			return battler.actor != null and battler.actor.is_player
+			return battler.is_player
 	)
 
 
@@ -28,7 +28,7 @@ func get_player_battlers() -> Array[Battler]:
 func get_enemy_battlers() -> Array[Battler]:
 	return get_battlers().filter(
 		func _filter_enemies(battler: Battler):
-			return battler.actor != null and not battler.actor.is_player
+			return not battler.is_player
 	)
 
 
@@ -37,10 +37,20 @@ func find_live_battlers(battlers: Array[Battler]) -> Array[Battler]:
 	return battlers.filter(func(battler: Battler): return battler.stats.health > 0)
 
 
+## Filter an array of Battlers to find those who may take an action. That is, they are active (see
+## [member Battler.is_active]) and have not taken a turn yet this round (see
+## [member Battler.has_acted_this_round]).
+func find_ready_to_act_battlers(battlers: Array[Battler]) -> Array[Battler]:
+	return battlers.filter(
+		func _filter_actors(actor: Battler) -> bool:
+			return actor.is_active and not actor.has_acted_this_round
+	)
+
+
 ## Returns true if all the specified battlers are inactive.
 func are_battlers_defeated(battlers: Array[Battler]) -> bool:
 	for battler in battlers:
-		if battler.actor.is_active:
+		if battler.is_active:
 			return false
 	
 	return true
