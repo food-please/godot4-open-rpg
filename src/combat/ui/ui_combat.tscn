@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://dxyw5j7wr56hl" path="res://src/combat/ui/effect_labels/ui_missed_label.tscn" id="3_36thh"]
 [ext_resource type="PackedScene" uid="uid://derqg1tjy74tw" path="res://src/combat/ui/turn_bar/ui_turn_bar.tscn" id="4_d78qn"]
 [ext_resource type="Script" uid="uid://smjuikb83bkc" path="res://src/combat/ui/ui_combat.gd" id="5_lubpu"]
-[ext_resource type="PackedScene" uid="uid://cy0jvvqhcopp3" path="res://src/combat/ui/battler_entry/ui_player_battler_list.tscn" id="8_5e8ql"]
+[ext_resource type="Script" uid="uid://2bkem6rl5jl6" path="res://src/combat/ui/battler_entry/ui_player_battler_list.gd" id="6_nv24v"]
 [ext_resource type="PackedScene" uid="uid://b35omff3fdb2g" path="res://src/combat/ui/battler_entry/ui_battler_entry.tscn" id="9_yx5l6"]
 [ext_resource type="PackedScene" uid="uid://cf6hixtledkyy" path="res://src/combat/ui/action_menu/ui_action_description.tscn" id="10_farde"]
 
@@ -179,9 +179,19 @@ grow_vertical = 2
 metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
-[node name="PlayerBattlerList" parent="PlayerMenus" instance=ExtResource("8_5e8ql")]
-modulate = Color(1, 1, 1, 1)
+[node name="PlayerBattlerList" type="VBoxContainer" parent="PlayerMenus"]
 layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -20.0
+offset_bottom = 20.0
+grow_horizontal = 0
+grow_vertical = 2
+script = ExtResource("6_nv24v")
 entry_scene = ExtResource("9_yx5l6")
 
 [node name="ActionDescription" parent="PlayerMenus" instance=ExtResource("10_farde")]

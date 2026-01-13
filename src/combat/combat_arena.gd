@@ -8,9 +8,3 @@ class_name CombatArena extends Control
 
 # Keep a reference to the turn queue, which handles combat logic including combat start and end.
 @onready var turn_queue: = $Battlers as ActiveTurnQueue
-
-
-## Begin combat, setting up the UI before running combat logic.
-func start() -> void:
-	# Begin the combat logic.
-	turn_queue.is_active = true

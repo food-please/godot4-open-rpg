@@ -59,7 +59,7 @@ func start(arena: PackedScene) -> void:
 	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
-	_active_arena.start()
+	#_active_arena.start()
 	
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.combat_finished.connect(
