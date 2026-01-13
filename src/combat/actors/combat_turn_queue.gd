@@ -17,7 +17,7 @@ var round_count = 1:
 
 
 func _ready() -> void:
-	battler_roster = BattlerRoster.new(get_tree())
+	battler_roster = BattlerRoster.new(self)
 
 
 func start() -> void:

@@ -41,7 +41,7 @@ func start(arena: PackedScene) -> void:
 
 	_active_arena = new_arena
 	_combat_container.add_child(_active_arena)
-	_ui.setup(_active_arena.turn_queue.battlers)
+	_ui.setup(_active_arena.turn_queue.battler_roster)
 
 	_previous_music_track = Music.get_playing_track()
 	Music.play(_active_arena.music)
@@ -59,7 +59,7 @@ func start(arena: PackedScene) -> void:
 	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
-	#_active_arena.start()
+	_active_arena.turn_queue.start()
 	
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.combat_finished.connect(
@@ -92,7 +92,7 @@ func start(arena: PackedScene) -> void:
 
 ## Displays a series of dialogue bubbles using Dialogic with information about the combat's outcome.
 func _display_combat_results_dialog(is_player_victory: bool):
-	var player_party_leader_name := _active_arena.turn_queue.battlers.players[0].name
+	var player_party_leader_name: = _active_arena.turn_queue.battler_roster.get_player_battlers()[0].name
 
 	var timeline_events: Array[String]
 	if is_player_victory:

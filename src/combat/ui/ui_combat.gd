@@ -58,7 +58,7 @@ func setup(battler_data: BattlerList) -> void:
 	_battlers = battler_data
 	_effect_label_builder.setup(_battlers)
 	_turn_bar.setup(_battlers)
-	_battler_list.setup(_battlers)
+	_battler_list.battlers = _battlers.players
 	
 	# If a player battler has been selected, the action menu should open so that the player may
 	# choose an action.
