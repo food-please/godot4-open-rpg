@@ -28,9 +28,15 @@ func next_round() -> void:
 	for battler in battler_roster.get_battlers():
 		battler.has_acted_this_round = false
 	
-	for battler in battler_roster.get_enemy_battlers():
-		battler.select_action()
+	# First of all, let enemy (necessarily AI) battlers pick their actions.
+	for battler in battler_roster.find_live_battlers(battler_roster.get_enemy_battlers()):
+		if battler.ai != null:
+			battler.ai.select_action(battler, battler_roster)
+		print("%s picked: " % battler.name, battler.cached_action)
 	
+	# Secondly, allow player Battlers to pick their action.
+	# This will be iterative as the player selects and cancels their choices. The turn queue will
+	# move to the action phase once all player Battlers have an action selected.
 	_select_next_player_action()
 
 
@@ -55,9 +61,11 @@ func _select_next_player_action() -> void:
 	
 	# If there are player Battlers needing cached actions, pick the first one and allow it to search
 	# for an action using either its AI controller (if present) or player input.
-	var next_battler: Battler = remaining_battlers.front()
-	next_battler.action_cached.connect(_select_next_player_action, 
+	var next_player_battler: Battler = remaining_battlers.front()
+	print("%s looking for actions!" % next_player_battler.name)
+	next_player_battler.action_cached.connect(_select_next_player_action, 
 		CONNECT_DEFERRED | CONNECT_ONE_SHOT)
+	CombatEvents.player_battler_selected.emit(next_player_battler)
 
 
 # The second phase of combat has each Battler act in order of speed. This is done by repeatedly

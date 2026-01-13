@@ -163,16 +163,13 @@ func _ready() -> void:
 		)
 
 
-func select_action() -> void:
-	print(name, " looks for an action!")
-	if ai != null:
-		pass
-	
-	elif is_player:
-		pass
-
-	await get_tree().create_timer(1.5).timeout
-	turn_finished.emit()
+#func select_action() -> void:
+	#print(name, " looks for an action!")
+	#if ai != null:
+		#ai.select_action()
+	#
+	#elif is_player:
+		#pass
 
 
 #func act(targets: Array[Battler] = []) -> void:
@@ -183,8 +180,7 @@ func act() -> void:
 
 		# cached_action.execute() is almost certainly is a coroutine.
 		@warning_ignore("redundant_await")
-		await cached_action.execute(self, [])
-		#await cached_action.execute(self, targets)
+		await cached_action.execute(self)
 	
 	turn_finished.emit.call_deferred()
 

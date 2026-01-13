@@ -7,23 +7,23 @@ class_name UIListMenu extends VBoxContainer
 
 ## The scene representing the different menu entries. The scene must be some derivation of 
 ## [BaseButton].
-@export var entry_scene: PackedScene
+#@export var entry_scene: PackedScene
 
-## Disables or enables clicking on/navigating to the various entries.
-## Defaults to true, as most menus will animate into existence before being interactable.
-var is_disabled: = true:
-	set(value):
-		is_disabled = value
-		for entry in _entries:
-			entry.disabled = is_disabled
-		
-		focus_first_entry()
-		_menu_cursor.visible = !is_disabled
+### Disables or enables clicking on/navigating to the various entries.
+### Defaults to true, as most menus will animate into existence before being interactable.
+#var is_disabled: = true:
+	#set(value):
+		#is_disabled = value
+		#for entry in _entries:
+			#entry.disabled = is_disabled
+		#
+		#focus_first_entry()
+		#_menu_cursor.visible = !is_disabled
 
-# Track all battler list entries in the following array. 
-var _entries: Array[BaseButton] = []
-
-@onready var _menu_cursor: = $MenuCursor as UIMenuCursor
+## Track all battler list entries in the following array. 
+#var _entries: Array[BaseButton] = []
+#
+#@onready var _menu_cursor: = $MenuCursor as UIMenuCursor
 
 
 ## Bring the first entry into input focus, moving the cursor to its position.

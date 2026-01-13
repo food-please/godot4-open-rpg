@@ -11,7 +11,7 @@ enum TargetScope { SELF, SINGLE, ALL }
 ## An action-specific icon. Shown primarily in menus.
 @export var icon: Texture
 ## The 'name' of the action. Shown primarily in menus.
-@export var label: = "Base combat action"
+@export var name: = "Base combat action"
 ## Tells the player exactly what an action does. Shown primarily in menus.
 @export var description: = "A combat action."
 
@@ -38,6 +38,9 @@ enum TargetScope { SELF, SINGLE, ALL }
 ## The amount of [member Battler.readiness] left to the Battler after acting. This can be used to
 ## design weak attacks that allow the Battler to take fast turns.
 @export_range(0.0, 100.0) var readiness_saved: = 0.0
+
+## The targets of a given action are cached on the action itself.
+var cached_targets: Array[Battler] = []
 
 
 ### Returns true if the [Battler] is able to use the action.
@@ -76,7 +79,7 @@ func is_target_valid(target: Battler) -> bool:
 ## Battler actions are (almost?) always coroutines, so it is expected that the caller will wait for
 ## execution to finish.
 ## [br][br]Note: The base action class does nothing, but must be overridden to do anything.
-func execute(source: Battler, _targets: Array[Battler] = []) -> void:
+func execute(source: Battler) -> void:
 	await source.get_tree().process_frame
 
 
