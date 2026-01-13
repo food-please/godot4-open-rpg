@@ -33,9 +33,9 @@ signal action_focused(action: BattlerAction)
 					entry.disabled = !can_use_action or is_disabled
 		)
 
-# Refer to the BattlerList to check whether or not an action is valid when it is selected.
+# Refer to the BattlerRoster to check whether or not an action is valid when it is selected.
 # This allows us to prevent the player from selecting an invalid action.
-var _battler_list: BattlerList
+var _battler_roster: BattlerRoster
 
 
 func _ready() -> void:
@@ -57,9 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Create the action menu, creating an entry for each [BattlerAction] (valid or otherwise) available
 ## to the selected [Battler].
 ## These actions are validated at run-time as they are selected in the menu.
-func setup(selected_battler: Battler, battler_list: BattlerList) -> void:
+func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
 	_battler = selected_battler
-	_battler_list = battler_list
+	_battler_roster = battler_roster
 	_build_action_menu()
 	
 	show()
@@ -92,7 +92,7 @@ func _on_entry_pressed(entry: BaseButton) -> void:
 	
 	# First of all, check to make sure that the action has valid targets. If it does
 	# not, do not allow selection of the action.
-	if action.get_possible_targets(_battler, _battler_list).is_empty():
+	if action.get_possible_targets(_battler, _battler_roster).is_empty():
 		# Normally, the button gives up focus when selected (to stop cycling menu during animation).
 		# However, the action is invalid and so the menu needs to keep focus for the player to
 		# select another action.

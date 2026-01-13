@@ -41,6 +41,12 @@ func start(arena: PackedScene) -> void:
 
 	_active_arena = new_arena
 	_combat_container.add_child(_active_arena)
+	
+	print("Wait")
+	# Wait a frame for the arena and its children (VFX, Battlers, etc.) to be ready.
+	await get_tree().process_frame
+	print("Battlers: ", _active_arena.turn_queue.battler_roster.get_battlers())
+	
 	_ui.setup(_active_arena.turn_queue.battler_roster)
 
 	_previous_music_track = Music.get_playing_track()
@@ -59,7 +65,7 @@ func start(arena: PackedScene) -> void:
 	await _ui.animation.animation_finished
 	
 	# Begin the combat logic. The turn queue takes over from here.
-	_active_arena.turn_queue.start()
+	#_active_arena.turn_queue.start()
 	
 	# Respond to the turn queue's signal the lets us know when the player has won or lost combat.
 	_active_arena.turn_queue.combat_finished.connect(

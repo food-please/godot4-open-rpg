@@ -4,7 +4,7 @@ class_name CombatTurnQueue extends Node
 ## Emitted whenever the combat logic has finished, including all animation details.
 signal finished(has_player_won: bool)
 
-## A list of the combat participants, in [BattlerList] form. This object is created by the turn
+## A list of the combat participants, in [BattlerRoster] form. This object is created by the turn
 ## queue from children [Battler]s and then made available to other combat systems.
 var battler_roster: BattlerRoster
 

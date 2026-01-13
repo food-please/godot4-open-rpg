@@ -21,7 +21,7 @@ class_name UICombat extends Control
 
 # The action menu/targeting cursor are created/freed dynamically. We'll track the combat participant
 # data so that it can be fed into the action menu and targeting cursor on creation.
-var _battlers: BattlerList
+var _battlers: BattlerRoster
 
 # The UI is responsible for relaying player input to the combat systems. In this case, we want to
 # track which battler and action are currently selected, so that we may queue orders for player
@@ -44,7 +44,6 @@ var _cursor: UIBattlerTargetingCursor = null
 
 # UI elements - display
 @onready var animation: = $AnimationPlayer as AnimationPlayer
-@onready var _turn_bar: = $TurnBar as UITurnBar
 @onready var _effect_label_builder: = $EffectLabelBuilder as UIEffectLabelBuilder
 
 # UI elements - player menus
@@ -54,11 +53,10 @@ var _cursor: UIBattlerTargetingCursor = null
 
 
 ## Prepare the menus for use by assigning appropriate [Battler] data.
-func setup(battler_data: BattlerList) -> void:
+func setup(battler_data: BattlerRoster) -> void:
 	_battlers = battler_data
 	_effect_label_builder.setup(_battlers)
-	_turn_bar.setup(_battlers)
-	_battler_list.battlers = _battlers.players
+	_battler_list.battlers = _battlers.get_player_battlers()
 	
 	# If a player battler has been selected, the action menu should open so that the player may
 	# choose an action.
@@ -83,12 +81,12 @@ func setup(battler_data: BattlerList) -> void:
 	
 	# If there is a change in Battler states (for now, only consider a change in health points),
 	# re-evaluate the targeting cursor's target list, if the cursor is currently active.
-	for battler in battler_data.get_all_battlers():
+	for battler in _battlers.get_battlers():
 		battler.stats.health_changed.connect(_on_battler_health_changed)
 	
 	# If a player Battler dies while the player is selecting an action or choosing targets, signal
 	# that the targeting cursor/menu should close.
-	for battler in battler_data.players:
+	for battler in _battlers.get_player_battlers():
 		battler.health_depleted.connect(
 			(func _on_player_battler_health_depleted(downed_battler: Battler):
 				if downed_battler == _selected_battler:

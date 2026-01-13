@@ -9,9 +9,9 @@ var _has_selected_action: = false
 
 ## Connect to the signals of a given [Battler]. The callback randomly chooses an action from the
 ## Battler's [member Battler.actions] and then randomly chooses a target.
-func setup(battler: Battler, battler_list: BattlerList) -> void:
+func setup(battler: Battler, battler_roster: BattlerRoster) -> void:
 	battler.ready_to_act.connect(
-		(func _on_battler_ready_to_act(source: Battler, battlers: BattlerList) -> void:
+		(func _on_battler_ready_to_act(source: Battler, battlers: BattlerRoster) -> void:
 			if not _has_selected_action:
 				# Only a Battler with actions is able to act.
 				if source.actions.is_empty():
@@ -35,7 +35,7 @@ func setup(battler: Battler, battler_list: BattlerList) -> void:
 					_has_selected_action = true
 					CombatEvents.action_selected.emit(action, source, targets)
 				else:
-					).bind(battler, battler_list)
+					).bind(battler, battler_roster)
 	)
 	
 	battler.action_finished.connect(

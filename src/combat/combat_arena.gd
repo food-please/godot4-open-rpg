@@ -7,4 +7,4 @@ class_name CombatArena extends Control
 @export var music: AudioStream
 
 # Keep a reference to the turn queue, which handles combat logic including combat start and end.
-@onready var turn_queue: = $Battlers as ActiveTurnQueue
+@onready var turn_queue: = $Battlers as CombatTurnQueue
