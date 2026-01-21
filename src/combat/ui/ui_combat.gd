@@ -24,10 +24,8 @@ class_name UICombat extends Control
 var _battlers: BattlerRoster
 
 # The UI is responsible for relaying player input to the combat systems. In this case, we want to
-# track which battler and action are currently selected, so that we may queue orders for player
-# battlers once the player has selected an action and targets.
-# One caveat is that the selected battler may die while the player is setting up an action, in which
-# case we want the menus to close immediately.
+# track which battler and action are currently selected, so that we may queue orders for all player
+# battlers before executing them sequentially.
 var _selected_battler: Battler = null:
 	set(value):
 		_selected_battler = value
@@ -42,7 +40,7 @@ var _selected_action: BattlerAction = null
 # This allows the cursor targets to be updated in real-time as Battler states change.
 var _cursor: UIBattlerTargetingCursor = null
 
-# UI elements - display
+# UI elements - effects
 @onready var animation: = $AnimationPlayer as AnimationPlayer
 @onready var _effect_label_builder: = $EffectLabelBuilder as UIEffectLabelBuilder
 
@@ -52,7 +50,7 @@ var _cursor: UIBattlerTargetingCursor = null
 @onready var _battler_list: = $PlayerMenus/PlayerBattlerList as UIPlayerBattlerList
 
 
-## Prepare the menus for use by assigning appropriate [Battler] data.
+## Prepare the menus for use by assigning appropriate [BattlerRoster] data.
 func setup(battler_data: BattlerRoster) -> void:
 	_battlers = battler_data
 	_effect_label_builder.setup(_battlers)
@@ -60,6 +58,8 @@ func setup(battler_data: BattlerRoster) -> void:
 	
 	# If a player battler has been selected, the action menu should open so that the player may
 	# choose an action.
+	# If no battler is selected (i.e. it's time to execute the actions) then the menus will just be
+	# hidden.
 	CombatEvents.player_battler_selected.connect(
 		func _on_player_battler_selected(battler: Battler) -> void:
 			# Reset the action description bar.

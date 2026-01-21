@@ -47,12 +47,11 @@ func find_battlers_needing_actions(battlers: Array[Battler]) -> Array[Battler]:
 
 
 ## Filter an array of Battlers to find those who may take an action. That is, they are active (see
-## [member Battler.is_active]) and have not taken a turn yet this round (see
-## [member Battler.has_acted_this_round]).
+## [member Battler.is_active]) and have a cached action ready (see [member Battler.cached_action]).
 func find_ready_to_act_battlers(battlers: Array[Battler]) -> Array[Battler]:
 	return battlers.filter(
 		func _filter_actors(actor: Battler) -> bool:
-			return actor.is_active and not actor.has_acted_this_round
+			return actor.is_active and actor.cached_action != null
 	)
 
 

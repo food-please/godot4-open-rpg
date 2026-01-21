@@ -129,12 +129,10 @@ var is_selectable: bool = true:
 		if not is_selectable:
 			is_selected = false
 
-## Describes whether or not the Battler has taken a turn during this combat round.
-var has_acted_this_round: = false
-
 ## Combat happens in two phases. In the first phase each Battler - player and enemy - select an
 ## action. In the second phase that action is carried out.
-## When selecting actions, a Battler caches it in the following memeber.
+## When selecting actions, a Battler caches it in the following memeber. The cached action is set
+## to null after execution.
 var cached_action: BattlerAction = null:
 	set(value):
 		cached_action = value
@@ -174,7 +172,6 @@ func _ready() -> void:
 
 #func act(targets: Array[Battler] = []) -> void:
 func act() -> void:
-	has_acted_this_round = true
 	if cached_action:
 		stats.energy -= cached_action.energy_cost
 
@@ -182,6 +179,8 @@ func act() -> void:
 		@warning_ignore("redundant_await")
 		await cached_action.execute(self)
 	
+	# Flag that the Battler has acted by resetting the cached action.
+	cached_action = null
 	turn_finished.emit.call_deferred()
 
 
@@ -197,6 +196,6 @@ func _to_string() -> String:
 	var msg: = "%s (Battler)" % name
 	if not is_active:
 		msg += " - INACTIVE"
-	elif has_acted_this_round:
+	elif cached_action == null:
 		msg += " - HAS ACTED"
 	return msg
