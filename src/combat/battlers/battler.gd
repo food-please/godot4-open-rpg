@@ -171,6 +171,7 @@ func _ready() -> void:
 
 
 #func act(targets: Array[Battler] = []) -> void:
+## [method BattlerAction.execute] the Battler's [member cached_action].
 func act() -> void:
 	if cached_action:
 		stats.energy -= cached_action.energy_cost
