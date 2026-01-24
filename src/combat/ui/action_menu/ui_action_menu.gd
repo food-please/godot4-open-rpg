@@ -21,9 +21,6 @@ signal action_focused(action: BattlerAction)
 # This allows us to prevent the player from selecting an invalid action.
 var _battler_roster: BattlerRoster
 
-# Track all battler list entries in the following array. 
-var _entries: Array[BaseButton] = []
-
 @onready var _menu_cursor: = $MenuCursor as UIMenuCursor
 
 
@@ -48,6 +45,13 @@ func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
 	_battler = selected_battler
 	_battler_roster = battler_roster
 	
+	if _battler.actions.is_empty():
+		action_selected.emit.call_deferred(null)
+		return
+	
+	var first_button: UIActionButton
+	var last_button: UIActionButton
+	
 	# Create the list of action entries, a series of buttons allowing the player to select actions.
 	for action in _battler.actions:
 		#var new_entry = _create_entry() as UIActionButton
@@ -64,34 +68,31 @@ func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
 		new_entry.mouse_entered.connect(_on_entry_focused.bind(new_entry))
 		new_entry.pressed.connect(_on_entry_pressed.bind(new_entry))
 		
-		_entries.append(new_entry)
+		last_button = new_entry
 	
-	_loop_first_and_last_entries()
+	# Find the first UIActionButton in the menu. Flag this as the first button.
+	for button in get_children():
+		if button is UIActionButton:
+			first_button = button
+			break
 	
-	# Wait a frame for the menu elements to be setup, then place the cursor at the first entry.
+	# If the menu has more than one entry, link the top and bottom entries (e.g. pressing down while
+	# on the bottom entry will cycle the menu selection to the topmost entry).
+	if last_button != first_button:
+		first_button.focus_neighbor_top = first_button.get_path_to(last_button)
+		last_button.focus_neighbor_bottom = last_button.get_path_to(first_button)
+	
+	# Wait a frame for the menu elements to be setup...
 	await get_tree().process_frame
-	_menu_cursor.show()
-	if not _entries.is_empty():
-		_entries[0].grab_focus()
-		_menu_cursor.position = _entries[0].global_position + Vector2(0.0, _entries[0].size.y/2.0)
 	
+	# ...then place the menu cursor - without tweening its position - at the first entry...
+	first_button.grab_focus()
+	_menu_cursor.position = first_button.global_position + Vector2(0.0, first_button.size.y/2.0)
+	_menu_cursor.show()
+	
+	# ...and finally activate the menu for player input.
 	show()
 	set_process_unhandled_input(true)
-
-
-func _loop_first_and_last_entries() -> void:
-	assert(not _entries.is_empty(), "No action entries for the menu to connect!")
-	
-	var last_entry_index: = _entries.size()-1
-	var first_entry: = _entries[0]
-	if last_entry_index > 0:
-		var last_entry: = _entries[last_entry_index]
-		first_entry.focus_neighbor_top = first_entry.get_path_to(last_entry)
-		last_entry.focus_neighbor_bottom = last_entry.get_path_to(first_entry)
-	
-	elif last_entry_index == 0:
-		first_entry.focus_neighbor_top = "."
-		first_entry.focus_neighbor_bottom = "."
 
 
 # Moves the [UIMenuCursor] to the focused entry. Derivative menus may want to add additional

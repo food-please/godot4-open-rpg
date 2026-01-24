@@ -79,13 +79,7 @@ func _ready() -> void:
 	
 	hide()
 	_cursor = _create_cursor_over_battler(_current_target)
-	
-	# If the Battler that is currently selecting targets is downed, close the cursor immediately.
-	CombatEvents.player_battler_selected.connect(
-		func _on_player_battler_selected(_battler: Battler) -> void:
-			set_process_unhandled_input(false)
-			queue_free()
-	)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_released("ui_accept"):

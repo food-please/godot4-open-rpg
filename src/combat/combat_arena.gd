@@ -6,13 +6,7 @@ class_name CombatArena extends Control
 ## The music that will be automatically played during this combat instance.
 @export var music: AudioStream
 
-## A list of the combat participants, in [BattlerRoster] form. This object is created by the turn
-## queue from children [Battler]s and then made available to other combat systems.
-@onready var battlers
 
-# Keep a reference to the turn queue, which handles combat logic including combat start and end.
-#@onready var turn_queue: = $Battlers as CombatTurnQueue
-
-
+## Retrieve the list of the combat participants, in [BattlerRoster] form.
 func get_battler_roster() -> BattlerRoster:
 	return $Battlers as BattlerRoster

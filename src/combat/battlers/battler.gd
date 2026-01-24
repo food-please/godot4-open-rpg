@@ -159,6 +159,18 @@ func _ready() -> void:
 			is_selectable = false
 			health_depleted.emit()
 		)
+		
+		# Similarly, duplicate all actions since some may be shared across multiple Battlers.
+		var battler_roster: = _get_roster()
+		assert(battler_roster != null, "%s is not a descendent of the BattlerRoster!" % name)
+		
+		var duplicate_actions: Array[BattlerAction] = []
+		for action in actions:
+			var duplicate_action: BattlerAction = action.duplicate()
+			duplicate_action.source = self
+			duplicate_action.battler_roster = battler_roster
+			duplicate_actions.append(duplicate_action)
+		actions = duplicate_actions
 
 
 #func select_action() -> void:
@@ -191,6 +203,16 @@ func take_hit(hit: BattlerHit) -> void:
 		stats.health -= hit.damage
 	else:
 		hit_missed.emit()
+
+
+# Iteratively looks through ancestor nodes to find the (grand)parent BattlerRoster.
+# This is used to link the Battler's actions to the roster.
+func _get_roster() -> BattlerRoster:
+	var parent: = get_parent()
+	while parent != null:
+		if parent is BattlerRoster:
+			return parent
+	return null
 
 
 func _to_string() -> String:

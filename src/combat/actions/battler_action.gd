@@ -3,6 +3,7 @@
 ## The following class is an interface that specific actions should implement. [method execute] is
 ## called once an action has been chosen and is a coroutine, containing the logic of the action
 ## including any animations or effects.
+@abstract
 class_name BattlerAction extends Resource
 
 enum TargetScope { SELF, SINGLE, ALL }
@@ -42,6 +43,12 @@ enum TargetScope { SELF, SINGLE, ALL }
 ## The targets of a given action are cached on the action itself.
 var cached_targets: Array[Battler] = []
 
+# A reference to the Battler originating this action.
+var source: Battler
+
+# A reference to the various Battlers involved in combat.
+var battler_roster: BattlerRoster
+
 
 ### Returns true if the [Battler] is able to use the action.
 ### [br][br]By default, this method checks for a few conditions:
@@ -78,9 +85,8 @@ func is_target_valid(target: Battler) -> bool:
 ## The body of the action, where different animations/modifiers/damage/etc. will be played out.
 ## Battler actions are (almost?) always coroutines, so it is expected that the caller will wait for
 ## execution to finish.
-## [br][br]Note: The base action class does nothing, but must be overridden to do anything.
-func execute(source: Battler) -> void:
-	await source.get_tree().process_frame
+@abstract
+func execute(source: Battler) -> void
 
 
 ## Returns and array of [Battler]s that could be affected by the action.

@@ -3,6 +3,7 @@
 #class_name CombatTurnQueue extends Node
 class_name BattlerRoster extends Node
 
+
 ## Emitted whenever the combat logic has finished, including all animation details.
 #signal finished(has_player_won: bool)
 
