@@ -108,7 +108,7 @@ func _create_targeting_cursor() -> void:
 	# Create the cursor which will respond to player input and allow choosing a target.
 	_cursor = target_cursor_scene.instantiate() as UIBattlerTargetingCursor
 	_cursor.targets_all = _selected_action.targets_all()
-	_cursor.targets = _selected_action.get_possible_targets(_selected_battler, _battlers)
+	_cursor.targets = _selected_action.get_possible_targets()
 	add_child(_cursor)
 	
 	# Finally, connect to the cursor's signals that will indicate that targets have been chosen.
@@ -134,4 +134,4 @@ func _create_targeting_cursor() -> void:
 
 func _on_battler_health_changed() -> void:
 	if _cursor != null:
-		_cursor.targets = _selected_action.get_possible_targets(_selected_battler, _battlers)
+		_cursor.targets = _selected_action.get_possible_targets()

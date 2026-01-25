@@ -109,7 +109,7 @@ func _on_entry_pressed(entry: BaseButton) -> void:
 	
 	# First of all, check to make sure that the action has valid targets. If it does
 	# not, do not allow selection of the action.
-	if action.get_possible_targets(_battler, _battler_roster).is_empty():
+	if action.get_possible_targets().is_empty():
 		# Normally, the button gives up focus when selected (to stop cycling menu during animation).
 		# However, the action is invalid and so the menu needs to keep focus for the player to
 		# select another action.

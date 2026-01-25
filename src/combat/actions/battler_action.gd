@@ -63,13 +63,13 @@ var battler_roster: BattlerRoster
 
 ## Verifies that an action can be run. This can be dependent on any number of details regarding the
 ## source and target [Battler]s.
-func can_execute(source: Battler, targets: Array[Battler] = []) -> bool:
+func can_execute() -> bool:
 	if source == null \
 			or source.stats.health <= 0 \
 			or source.stats.energy < energy_cost:
 		return false
 	
-	return !targets.is_empty()
+	return !get_possible_targets().is_empty()
 
 
 ## Evaluate whether or not a given target is valid for this action, irrespective of the battler's
@@ -86,13 +86,13 @@ func is_target_valid(target: Battler) -> bool:
 ## Battler actions are (almost?) always coroutines, so it is expected that the caller will wait for
 ## execution to finish.
 @abstract
-func execute(source: Battler) -> void
+func execute() -> void
 
 
 ## Returns and array of [Battler]s that could be affected by the action.
 ## This includes most cases, accounting for parameters such as [member targets_self]. Specific
 ## actions may wish to override get_possible_targets (to target only mushrooms, for example).
-func get_possible_targets(source: Battler, battlers: BattlerRoster) -> Array[Battler]:
+func get_possible_targets() -> Array[Battler]:
 	var possible_targets: Array[Battler] = []
 	
 	# Normally, actions can pick from battlers of the opposing team. However, actions may be
@@ -102,20 +102,20 @@ func get_possible_targets(source: Battler, battlers: BattlerRoster) -> Array[Bat
 	
 	elif source.is_player:
 		if targets_friendlies:
-			possible_targets.append_array(battlers.get_player_battlers())
+			possible_targets.append_array(battler_roster.get_player_battlers())
 		
 		if targets_enemies:
-			possible_targets.append_array(battlers.get_enemy_battlers())
+			possible_targets.append_array(battler_roster.get_enemy_battlers())
 	
 	else:
 		if targets_friendlies:
-			possible_targets.append_array(battlers.get_enemy_battlers())
+			possible_targets.append_array(battler_roster.get_enemy_battlers())
 		
 		elif targets_enemies:
-			possible_targets.append_array(battlers.get_player_battlers())
+			possible_targets.append_array(battler_roster.get_player_battlers())
 	
 	# Filter the targets to only include live Battlers.
-	possible_targets = battlers.find_live_battlers(possible_targets)
+	possible_targets = battler_roster.find_live_battlers(possible_targets)
 	return possible_targets
 
 

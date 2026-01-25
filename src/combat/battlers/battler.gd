@@ -190,7 +190,7 @@ func act() -> void:
 
 		# cached_action.execute() is almost certainly is a coroutine.
 		@warning_ignore("redundant_await")
-		await cached_action.execute(self)
+		await cached_action.execute()
 	
 	# Flag that the Battler has acted by resetting the cached action.
 	cached_action = null

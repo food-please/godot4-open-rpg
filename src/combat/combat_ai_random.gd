@@ -54,7 +54,7 @@ var _has_selected_action: = false
 
 ## This controller randomly chooses an action from the Battler's [member Battler.actions] and then
 ## randomly chooses a target.
-func select_action(source: Battler, battler_roster: BattlerRoster) -> BattlerAction:
+func select_action(source: Battler) -> BattlerAction:
 	print("%s looking for actions!" % source.name)
 	
 	var selected_action: BattlerAction = null
@@ -70,7 +70,7 @@ func select_action(source: Battler, battler_roster: BattlerRoster) -> BattlerAct
 			var action: BattlerAction = source.actions[action_index].duplicate()
 			
 			# Randomly choose a target.
-			var possible_targets: = action.get_possible_targets(source, battler_roster)
+			var possible_targets: = action.get_possible_targets()
 			var targets: Array[Battler] = []
 			if action.targets_all():
 				targets = possible_targets

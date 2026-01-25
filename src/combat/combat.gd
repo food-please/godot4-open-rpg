@@ -101,7 +101,7 @@ func next_round() -> void:
 	# First of all, let enemy (necessarily AI) battlers pick their actions.
 	for battler in _battler_roster.find_live_battlers(_battler_roster.get_enemy_battlers()):
 		if battler.ai != null:
-			battler.ai.select_action(battler, _battler_roster)
+			battler.ai.select_action(battler)
 		print("%s picked: " % battler.name, battler.cached_action)
 	
 	# Secondly, allow player Battlers to pick their action.
