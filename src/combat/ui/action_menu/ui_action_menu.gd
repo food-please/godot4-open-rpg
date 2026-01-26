@@ -1,4 +1,4 @@
-## A menu lists a [Battler]'s [member Battler.actions], allowing the player to select one.
+## A menu lists a [Battler]'s [member Battler._actions], allowing the player to select one.
 class_name UIActionMenu extends VBoxContainer
 
 ## Emitted when a player has selected an action and the menu has faded to transparent.
@@ -11,23 +11,24 @@ signal action_focused(action: BattlerAction)
 ## [BaseButton].
 @export var entry_scene: PackedScene
 
-# The menu tracks the [BattlerAction]s available to a single [Battler], depending on Battler state 
-# (energy costs, for example).
-# The action menu also needs to respond to Battler state, such as a change in energy points or the
-# Battler's health.
-@export var _battler: Battler
-
-# Refer to the BattlerRoster to check whether or not an action is valid when it is selected.
-# This allows us to prevent the player from selecting an invalid action.
-var _battler_roster: BattlerRoster
+## Determines whether or not the menu is visible and can be affected by player input.
+var is_active: = false:
+	set(value):
+		print("Show action menu? ", value)
+		is_active = value
+		
+		visible = is_active
+		set_process_unhandled_input(is_active)
 
 @onready var _menu_cursor: = $MenuCursor as UIMenuCursor
 
 
 func _ready() -> void:
-	hide()
-	_menu_cursor.hide()
-	set_process_unhandled_input(false)
+	is_active = false
+	#print("Action menu exists!")
+	#hide()
+	#_menu_cursor.hide()
+	#set_process_unhandled_input(false)
 
 
 # Capture any input events that will signal going "back" in the menu hierarchy.
@@ -38,57 +39,49 @@ func _unhandled_input(event: InputEvent) -> void:
 		CombatEvents.player_battler_selected.emit(null)
 
 
-## Create the action menu, creating an entry for each [BattlerAction] (valid or otherwise) available
-## to the selected [Battler].
-## These actions are validated at run-time as they are selected in the menu.
-func setup(selected_battler: Battler, battler_roster: BattlerRoster) -> void:
-	_battler = selected_battler
-	_battler_roster = battler_roster
+## Create the action menu, creating an entry for each [BattlerAction].
+func setup(action_list: Array[BattlerAction]) -> void:
+	var first_button: UIActionButton = null
+	var last_button: UIActionButton = null
 	
-	if _battler.actions.is_empty():
-		action_selected.emit.call_deferred(null)
-		return
-	
-	var first_button: UIActionButton
-	var last_button: UIActionButton
-	
-	# Create the list of action entries, a series of buttons allowing the player to select actions.
-	for action in _battler.actions:
-		#var new_entry = _create_entry() as UIActionButton
-		var new_entry: = entry_scene.instantiate()
-		assert(new_entry is UIActionButton, "Entries to the UIActionMenu must be UIActionButtons!" + 
-			" A non-UIActionButton entry_scene has been specified.")
-		add_child(new_entry)
+	if not action_list.is_empty():
+		# Create a list of buttons allowing the player to select BattlerActions.
+		for action in action_list:
+			#var new_entry = _create_entry() as UIActionButton
+			var new_entry: = entry_scene.instantiate()
+			assert(new_entry is UIActionButton, "Entries to the UIActionMenu must be " +
+				"UIActionButtons! A non-UIActionButton entry_scene has been specified.")
+			add_child(new_entry)
+			
+			new_entry.action = action
+			new_entry.disabled = !action.can_execute()
+			
+			new_entry.focus_entered.connect(_on_entry_focused.bind(new_entry))
+			new_entry.mouse_entered.connect(_on_entry_focused.bind(new_entry))
+			new_entry.pressed.connect(_on_entry_pressed.bind(new_entry))
+			
+			last_button = new_entry
 		
-		new_entry.action = action
-		new_entry.disabled = _battler.stats.energy < action.energy_cost
-		#new_entry.focus_neighbor_right = "." # Don't allow input to jump to the player battler list.
+		# Find the first UIActionButton in the menu. Flag this as the first button.
+		for button in get_children():
+			if button is UIActionButton:
+				first_button = button
+				break
 		
-		new_entry.focus_entered.connect(_on_entry_focused.bind(new_entry))
-		new_entry.mouse_entered.connect(_on_entry_focused.bind(new_entry))
-		new_entry.pressed.connect(_on_entry_pressed.bind(new_entry))
-		
-		last_button = new_entry
-	
-	# Find the first UIActionButton in the menu. Flag this as the first button.
-	for button in get_children():
-		if button is UIActionButton:
-			first_button = button
-			break
-	
-	# If the menu has more than one entry, link the top and bottom entries (e.g. pressing down while
-	# on the bottom entry will cycle the menu selection to the topmost entry).
-	if last_button != first_button:
-		first_button.focus_neighbor_top = first_button.get_path_to(last_button)
-		last_button.focus_neighbor_bottom = last_button.get_path_to(first_button)
+		# If the menu has more than one entry, link the top and bottom entries (e.g. pressing down while
+		# on the bottom entry will cycle the menu selection to the topmost entry).
+		if last_button != first_button:
+			first_button.focus_neighbor_top = first_button.get_path_to(last_button)
+			last_button.focus_neighbor_bottom = last_button.get_path_to(first_button)
 	
 	# Wait a frame for the menu elements to be setup...
 	await get_tree().process_frame
 	
 	# ...then place the menu cursor - without tweening its position - at the first entry...
-	first_button.grab_focus()
-	_menu_cursor.position = first_button.global_position + Vector2(0.0, first_button.size.y/2.0)
-	_menu_cursor.show()
+	if first_button != null:
+		first_button.grab_focus()
+		_menu_cursor.position = first_button.global_position + Vector2(0.0, first_button.size.y/2.0)
+		_menu_cursor.show()
 	
 	# ...and finally activate the menu for player input.
 	show()

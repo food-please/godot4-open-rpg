@@ -32,6 +32,7 @@ const GROUP: = "_COMBAT_BATTLER_GROUP"
 @export var stats: BattlerStats = null
 ## Each action's data stored in this array represents an action the battler can perform.
 ## These can be anything: attacks, healing spells, etc.
+
 @export var actions: Array[BattlerAction]
 
 ## Each Battler is shown on the screen by a [BattlerAnim] object. The object is created dynamically
@@ -165,8 +166,8 @@ func _ready() -> void:
 		assert(battler_roster != null, "%s is not a descendent of the BattlerRoster!" % name)
 		
 		var duplicate_actions: Array[BattlerAction] = []
-		for action in actions:
-			var duplicate_action: BattlerAction = action.duplicate()
+		for battler_action in actions:
+			var duplicate_action: = battler_action.duplicate()
 			duplicate_action.source = self
 			duplicate_action.battler_roster = battler_roster
 			duplicate_actions.append(duplicate_action)
@@ -205,13 +206,25 @@ func take_hit(hit: BattlerHit) -> void:
 		hit_missed.emit()
 
 
-# Iteratively looks through ancestor nodes to find the (grand)parent BattlerRoster.
-# This is used to link the Battler's actions to the roster.
+#func get_actions() -> Array[BattlerAction]:
+	#var duplicate_actions: Array[BattlerAction] = []
+	#for action in _actions:
+		#var duplicate_action: BattlerAction = action.duplicate()
+		#duplicate_action.source = self
+		#duplicate_actions.append(duplicate_action)
+		#print("Add action %s " % duplicate_action.name, duplicate_action)
+	#print("Returning ", duplicate_actions)
+	#return duplicate_actions
+
+
+# Iteratively search this node's parents for the BattlerRoster. Battler's must be descendants of the
+# BattlerRoster. Used to setup this Battler's BattlerActions.
 func _get_roster() -> BattlerRoster:
 	var parent: = get_parent()
 	while parent != null:
 		if parent is BattlerRoster:
-			return parent
+			return parent as BattlerRoster
+		parent = get_parent()
 	return null
 
 
