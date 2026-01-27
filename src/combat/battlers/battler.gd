@@ -161,7 +161,8 @@ func _ready() -> void:
 			health_depleted.emit()
 		)
 		
-		# Similarly, duplicate all actions since some may be shared across multiple Battlers.
+		# Similarly, duplicate all actions since some may be shared across multiple Battlers and
+		# each needs to point to the action source (i.e. this Battler).
 		var battler_roster: = _get_roster()
 		assert(battler_roster != null, "%s is not a descendent of the BattlerRoster!" % name)
 		

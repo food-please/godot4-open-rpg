@@ -21,6 +21,6 @@ var action: BattlerAction:
 
 func _ready() -> void:
 	pressed.connect(func _on_pressed() -> void:
-		print("Pressed " % name)
+		print("Pressed %s" % name)
 		release_focus()
 	)

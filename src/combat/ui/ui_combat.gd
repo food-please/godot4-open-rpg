@@ -22,24 +22,24 @@ class_name UICombat extends Control
 # The UI is responsible for relaying player input to the combat systems. In this case, we want to
 # track which battler and action are currently selected, so that we may queue orders for all player
 # battlers before executing them sequentially.
-var _selected_battler: Battler = null:
-	set(value):
-		_selected_battler = value
-		if _selected_battler == null:
-			_selected_action = null
+#var _selected_battler: Battler
+	#set(value):
+		#_selected_battler = value
+		#if _selected_battler == null:
+			#_selected_action = null
 
 # Keep track of which action the player is currently building. This is relevent whenever the player
 # is choosing targets.
-var _selected_action: BattlerAction = null
+#var _selected_action: BattlerAction = null
 
 # A reference to the active action menu, which is created dynamically whenever the player chooses
 # a BattlerAction.
 # This reference is non-null only when the player is choosing an action.
-var _action_menu: UIActionMenu = null
+#var _action_menu: UIActionMenu = null
 
 # Keep reference to the active targeting cursor. If no cursor is active, the value is null.
 # This allows the cursor targets to be updated in real-time as Battler states change.
-var _cursor: UIBattlerTargetingCursor = null
+#var _cursor: UIBattlerTargetingCursor = null
 
 # UI elements - effects
 @onready var animation: = $AnimationPlayer as AnimationPlayer
@@ -63,7 +63,7 @@ func setup(battler_data: BattlerRoster) -> void:
 	CombatEvents.player_battler_selected.connect(
 		(func _on_player_battler_selected(battler: Battler) -> void:
 			print("Looking for actions: ", battler.actions)
-			choose_action(battler.actions)
+			choose_action(battler)
 			)
 			
 			# Player menu. choose actions(action_list)
@@ -89,21 +89,16 @@ func setup(battler_data: BattlerRoster) -> void:
 	)
 
 
-func choose_action(action_list: Array[BattlerAction]) -> void:
-	if _action_menu != null:
-		_action_menu.queue_free()
-	
-	print("Choosing actions: ", action_list)
-	
-	_action_menu = action_menu_scene.instantiate() as UIActionMenu
-	_action_menu_anchor.add_child(_action_menu)
-	
-	_action_menu.setup(action_list)
-	_action_menu.is_active = true
+func choose_action(battler: Battler) -> void:
+	# Instantiate the scene, stuff it full of action data, and show it on the screen.
+	var action_menu = action_menu_scene.instantiate() as UIActionMenu
+	_action_menu_anchor.add_child(action_menu)
+	action_menu.setup(battler.actions)
+	action_menu.is_active = true
 	
 	# Link the action menu to the action description bar, providing a description of the
 	# highlighted action.
-	_action_menu.action_focused.connect(
+	action_menu.action_focused.connect(
 		func _on_action_focused(action: BattlerAction) -> void:
 			_action_description.description = action.description
 	)
@@ -111,46 +106,46 @@ func choose_action(action_list: Array[BattlerAction]) -> void:
 	# The action builder will wait until the player selects an action or presses 'back'.
 	# Selecting an action will trigger the following signal, whereas pressing 'back' will try to
 	# return action selection to the previous player Battler.
-	_action_menu.action_selected.connect(
-		func _on_action_selected(action: BattlerAction) -> void:
-			_action_menu.is_active = false
-			#if action != null:
-				#choose_targets(action)
-			#
-			## The player pressed "back", so we'll let the Combat state know that the player wants
-			## to choose actions for the previous Battler, if there is one.
-			#else:
-				#pass
-			#
-			#_selected_action = action
-			
+	action_menu.action_selected.connect(
+		(func _on_action_selected(action: BattlerAction, selected_battler: Battler) -> void:
+			if action != null:
+				choose_targets(selected_battler, action)
+
+			## Whether or not the player selected an action, we'll want to hide the menu.
+			action_menu.queue_free()
+			).bind(battler)
 	)
 
 
-func choose_targets(action: BattlerAction) -> void:
+func choose_targets(battler: Battler, action: BattlerAction) -> void:
 	# Create the cursor which will respond to player input and allow choosing a target.
 	var cursor = target_cursor_scene.instantiate() as UIBattlerTargetingCursor
 	cursor.targets_all = action.targets_all()
 	cursor.targets = action.get_possible_targets()
 	add_child(cursor)
 	
-	# Finally, connect to the cursor's signals that will indicate that targets have been chosen.
+	# The player may either select targets or press the "back" button.
+	# If targets were chosen, we'll assign the targets to the action and, finally, cache the action
+	# on the selected Battler.
+	# If the user pressed "back", we'll go back to the choose action state.
 	cursor.targets_selected.connect(
-		(func _on_cursor_targets_selected(targets: Array[Battler], selected_action: BattlerAction) -> void:
-			selected_action.cached_targets = targets
+		(func _on_targets_selected(targets: Array[Battler], selected_action: BattlerAction,
+				selected_battler: Battler) -> void:
 			if not targets.is_empty():
+				selected_action.cached_targets = targets
+				selected_battler.cached_action = selected_action
+				
 				# At this point, the player should have selected a valid action and assigned it
 				# targets, so the action may be cached for whenever the battler is ready.
-				CombatEvents.action_selected.emit(_selected_action, _selected_battler, targets)
-				
-				# The player has properly queued an action. Return the UI to the state where the
-				# player will pick a player Battler.
-				CombatEvents.player_battler_selected.emit(null)
+				#CombatEvents.action_selected.emit(_selected_action, _selected_battler, targets)
+				#
+				## The player has properly queued an action. Return the UI to the state where the
+				## player will pick a player Battler.
+				#CombatEvents.player_battler_selected.emit(null)
 			
 			else:
-				_selected_action = null
-				#_create_action_menu()
-			).bind(action)
+				choose_action(selected_battler)
+			).bind(action, battler)
 	)
 
 

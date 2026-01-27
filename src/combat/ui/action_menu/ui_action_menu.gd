@@ -25,18 +25,13 @@ var is_active: = false:
 
 func _ready() -> void:
 	is_active = false
-	#print("Action menu exists!")
-	#hide()
-	#_menu_cursor.hide()
-	#set_process_unhandled_input(false)
 
 
 # Capture any input events that will signal going "back" in the menu hierarchy.
 # This includes mouse or touch input outside of a menu or pressing the back button/key.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_released("select") or event.is_action_released("back"):
-		queue_free()
-		CombatEvents.player_battler_selected.emit(null)
+		action_selected.emit(null)
 
 
 ## Create the action menu, creating an entry for each [BattlerAction].
@@ -53,7 +48,12 @@ func setup(action_list: Array[BattlerAction]) -> void:
 				"UIActionButtons! A non-UIActionButton entry_scene has been specified.")
 			add_child(new_entry)
 			
-			new_entry.action = action
+			# We'll populate the menu with duplicates of the BattlerActions in the list.
+			# This allows us to set targets without worrying about changing the Battler's copy of
+			# the actions.
+			new_entry.action = action.duplicate()
+			new_entry.action.source = action.source
+			new_entry.action.battler_roster = action.battler_roster
 			new_entry.disabled = !action.can_execute()
 			
 			new_entry.focus_entered.connect(_on_entry_focused.bind(new_entry))
@@ -98,11 +98,11 @@ func _on_entry_focused(entry: UIActionButton) -> void:
 # Override the base method to allow the player to select an action for the specified Battler.
 func _on_entry_pressed(entry: BaseButton) -> void:
 	var action_entry: = entry as UIActionButton
-	var action: BattlerAction = action_entry.action.duplicate()
+	var selected_action: BattlerAction = action_entry.action
 	
 	# First of all, check to make sure that the action has valid targets. If it does
 	# not, do not allow selection of the action.
-	if action.get_possible_targets().is_empty():
+	if selected_action.get_possible_targets().is_empty():
 		# Normally, the button gives up focus when selected (to stop cycling menu during animation).
 		# However, the action is invalid and so the menu needs to keep focus for the player to
 		# select another action.
@@ -110,5 +110,4 @@ func _on_entry_pressed(entry: BaseButton) -> void:
 		return
 	
 	# There are available targets, so the UI can move on to selecting targets.
-	queue_free()
-	action_selected.emit(action)
+	action_selected.emit(selected_action)

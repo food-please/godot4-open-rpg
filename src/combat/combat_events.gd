@@ -18,5 +18,5 @@ signal player_battler_selected(battler: Battler)
 
 ## Emitted whenever a battler has selected an action to perform once it is
 ## [signal Battler.ready_to_act]
-@warning_ignore("unused_signal")
-signal action_selected(action: BattlerAction, source: Battler, targets: Array[Battler])
+#@warning_ignore("unused_signal")
+#signal action_selected(action: BattlerAction, source: Battler, targets: Array[Battler])
