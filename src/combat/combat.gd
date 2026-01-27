@@ -86,13 +86,6 @@ func setup(arena: PackedScene) -> void:
 	next_round.call_deferred()
 
 
-#TODO: Make this cleanly wrap up the combat state. CAll elsewhere.
-## Ends combat immediately and gracefully, freeing Combat-related scenes and handing over logic
-## via the [signal CombatEvents.combat_finished] signal.
-func shutdown() -> void:
-	_battler_roster = null
-
-
 # Moves combat to the next round. At the beginning of the round, all Battlers will choose an action.
 func next_round() -> void:
 	round_count += 1

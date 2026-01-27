@@ -1,6 +1,5 @@
-# TODO: Improve description. Hint at VFX/SFX? 
-## An arena is the background for a battle. It is a Control node that contains the battlers and the turn queue.
-## It also contains the music that plays during the battle.
+## An arena is the editor-configured environment for a battle. It is a Control node that contains 
+## the combat participants and details (such as background, foreground, music, etc.).
 class_name CombatArena extends Control
 
 ## The music that will be automatically played during this combat instance.

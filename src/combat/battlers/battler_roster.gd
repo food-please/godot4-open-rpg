@@ -1,4 +1,10 @@
-# Participating Battlers must be descendents of this node.
+## The BattlerRoster provides easy access to combat participants.
+##
+## The roster is a central means of accessing all the [Battler]s in a combat, providing utility
+## methods to filter them for a number of criteria (player, enemy, is_alive, etc.).
+##
+## Note that Battlers must be a descendent (though not necessarily a direct child) of the roster
+## to be included in combat.
 @icon("icon_turn_queue.png")
 class_name BattlerRoster extends Node
 
