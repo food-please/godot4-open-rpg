@@ -14,9 +14,7 @@ signal action_focused(action: BattlerAction)
 ## Determines whether or not the menu is visible and can be affected by player input.
 var is_active: = false:
 	set(value):
-		print("Show action menu? ", value)
 		is_active = value
-		
 		visible = is_active
 		set_process_unhandled_input(is_active)
 

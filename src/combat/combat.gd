@@ -35,7 +35,7 @@ var _previous_music_track: AudioStream = null
 # A reference to 
 @onready var _battler_roster: BattlerRoster
 @onready var _combat_container: = $CenterContainer as CenterContainer
-@onready var _transition_delay_timer: = $CenterContainer/TransitionDelay as Timer
+@onready var _transition_delay_timer: = $UI/TransitionDelay as Timer
 @onready var _ui: = $UI as UICombat
 
 
@@ -61,10 +61,8 @@ func setup(arena: PackedScene) -> void:
 	_combat_container.add_child(combat_arena)
 	_battler_roster = combat_arena.get_battler_roster()
 	
-	print("Wait")
 	# Wait a frame for the arena and its children (VFX, Battlers, etc.) to be ready.
 	await get_tree().process_frame
-	print("Battlers: ", _battler_roster.get_battlers())
 	
 	_ui.setup(_battler_roster)
 
@@ -103,7 +101,6 @@ func next_round() -> void:
 	for battler in _battler_roster.find_live_battlers(_battler_roster.get_enemy_battlers()):
 		if battler.ai != null:
 			battler.ai.select_action(battler)
-		print("%s picked: " % battler.name, battler.cached_action)
 	
 	# Secondly, allow player Battlers to pick their action.
 	# This will be iterative as the player selects and cancels their choices. The turn queue will
@@ -126,7 +123,6 @@ func _select_next_player_action() -> void:
 	# If there are no player Battlers needing actions, move on to the second phase of a round:
 	# taking action!
 	if remaining_battlers.is_empty():
-		print("No remaining actions, move to execution.")
 		# De-select the last Battler that was receiving orders.
 		CombatEvents.player_battler_selected.emit(null)
 		_play_next_action.call_deferred()
@@ -135,7 +131,6 @@ func _select_next_player_action() -> void:
 	# If there are player Battlers needing cached actions, pick the first one and allow it to search
 	# for an action using either its AI controller (if present) or player input.
 	var next_player_battler: Battler = remaining_battlers.front()
-	print("%s looking for actions!" % next_player_battler.name)
 	
 	# When the player selects an action (or presses 'back'), the current Battler needs to move back
 	# to its rest position before moving on to the next battler, hence the await call below.
@@ -145,7 +140,6 @@ func _select_next_player_action() -> void:
 			# UIActionMenu). If so, the player wishes to reissue orders for the previous Battler.
 			# If there IS a previous Battler, remove its cached action.
 			if battler.cached_action == null:
-				print("Go to previous Battler")
 				var battlers: = _battler_roster.get_player_battlers()
 				var index: = battlers.find(battler)
 				if index > 0:
@@ -169,11 +163,9 @@ func _play_next_action() -> void:
 	# Check for battle end conditions, that one side has been downed.
 	if _battler_roster.are_battlers_defeated(_battler_roster.get_player_battlers()):
 		_on_combat_finished.call_deferred(false)
-		print("Player defeated")
 		return
 	elif _battler_roster.are_battlers_defeated(_battler_roster.get_enemy_battlers()):
 		_on_combat_finished.call_deferred(true)
-		print("Enemies defeated")
 		return
 
 	# Check for an active Battler. If neither side has lost yet there are no active actors, it's
@@ -202,15 +194,12 @@ func _get_next_actor() -> Battler:
 
 
 func _on_combat_finished(is_player_victory: bool) -> void:
-	print("Combat over")
-	
-	_battler_roster = null
-	
 	# Fade out the combat UI elements.
 	_ui.animation.play("fade_out")
 	await _ui.animation.animation_finished
-	
 	await _display_combat_results_dialog(is_player_victory)
+	
+	_battler_roster = null
 	
 	# Wait a short period of time and then fade the screen to black.
 	_transition_delay_timer.start()
@@ -221,9 +210,6 @@ func _on_combat_finished(is_player_victory: bool) -> void:
 	# Clean up the combat arena.
 	for child in _combat_container.get_children():
 		child.free()
-	#assert(_active_arena != null, "Combat finished but no active arena to clean up!")
-	#_active_arena.queue_free()
-	#_active_arena = null
 
 	Music.play(_previous_music_track)
 	_previous_music_track = null

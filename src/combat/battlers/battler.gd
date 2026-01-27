@@ -138,7 +138,6 @@ var cached_action: BattlerAction = null:
 	set(value):
 		cached_action = value
 		action_cached.emit()
-		print("Cache action")
 
 
 static func sort(a: Battler, b: Battler) -> bool:
@@ -175,16 +174,6 @@ func _ready() -> void:
 		actions = duplicate_actions
 
 
-#func select_action() -> void:
-	#print(name, " looks for an action!")
-	#if ai != null:
-		#ai.select_action()
-	#
-	#elif is_player:
-		#pass
-
-
-#func act(targets: Array[Battler] = []) -> void:
 ## [method BattlerAction.execute] the Battler's [member cached_action].
 func act() -> void:
 	if cached_action:
@@ -205,17 +194,6 @@ func take_hit(hit: BattlerHit) -> void:
 		stats.health -= hit.damage
 	else:
 		hit_missed.emit()
-
-
-#func get_actions() -> Array[BattlerAction]:
-	#var duplicate_actions: Array[BattlerAction] = []
-	#for action in _actions:
-		#var duplicate_action: BattlerAction = action.duplicate()
-		#duplicate_action.source = self
-		#duplicate_actions.append(duplicate_action)
-		#print("Add action %s " % duplicate_action.name, duplicate_action)
-	#print("Returning ", duplicate_actions)
-	#return duplicate_actions
 
 
 # Iteratively search this node's parents for the BattlerRoster. Battler's must be descendants of the

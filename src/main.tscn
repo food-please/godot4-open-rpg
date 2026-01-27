@@ -791,11 +791,11 @@ grow_vertical = 2
 size_flags_horizontal = 4
 metadata/_edit_lock_ = true
 
-[node name="TransitionDelay" type="Timer" parent="Combat/CenterContainer"]
+[node name="UI" parent="Combat" instance=ExtResource("66_mo8tx")]
+
+[node name="TransitionDelay" type="Timer" parent="Combat/UI"]
 wait_time = 0.5
 one_shot = true
-
-[node name="UI" parent="Combat" instance=ExtResource("66_mo8tx")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 

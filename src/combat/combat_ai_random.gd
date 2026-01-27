@@ -55,8 +55,6 @@ var _has_selected_action: = false
 ## This controller randomly chooses an action from the Battler's [member Battler.actions] and then
 ## randomly chooses a target.
 func select_action(source: Battler) -> void:
-	print("%s looking for actions!" % source.name)
-	
 	# Keep track of how many times the controller has tried to find a valid action. In the event
 	# that the controller fails ITERATION_MAX times, it will cease searching for an action.
 	# We do this because it is possible that the designer may create a scenario where there are

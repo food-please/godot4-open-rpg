@@ -32,7 +32,7 @@ func _ready() -> void:
 
 
 # Free any old battler entries, if they exist.
-func _clear() -> void:
+func _clear(_result: bool = false) -> void:
 	for old_entry in get_children():
 		old_entry.queue_free()
 	_entries.clear()
