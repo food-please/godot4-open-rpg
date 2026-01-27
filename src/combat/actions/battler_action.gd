@@ -50,17 +50,6 @@ var source: Battler
 var battler_roster: BattlerRoster
 
 
-### Returns true if the [Battler] is able to use the action.
-### [br][br]By default, this method checks for a few conditions:
-###    - The battler reference is valid.
-###    - The battler has health points.
-###    - The battler has enough action points to perform the action.
-#func can_be_used_by(battler: Battler) -> bool:
-	#return battler != null \
-		#and battler.stats.health > 0 \
-		#and battler.stats.energy >= energy_cost
-
-
 ## Verifies that an action can be run. This can be dependent on any number of details regarding the
 ## source and target [Battler]s.
 func can_execute() -> bool:
@@ -81,6 +70,7 @@ func is_target_valid(target: Battler) -> bool:
 	if target.is_selectable and target.stats.health > 0:
 		return true
 	return false
+
 
 ## The body of the action, where different animations/modifiers/damage/etc. will be played out.
 ## Battler actions are (almost?) always coroutines, so it is expected that the caller will wait for

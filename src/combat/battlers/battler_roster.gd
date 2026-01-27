@@ -1,6 +1,5 @@
 # Participating Battlers must be descendents of this node.
 @icon("icon_turn_queue.png")
-#class_name CombatTurnQueue extends Node
 class_name BattlerRoster extends Node
 
 

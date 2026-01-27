@@ -315,8 +315,9 @@ size = Vector2(14, 23)
 [node name="Main" type="Node2D"]
 scale = Vector2(5, 5)
 
-[node name="Field" type="Node2D" parent="." node_paths=PackedStringArray("player_default_gamepiece")]
+[node name="Field" type="Node2D" parent="." node_paths=PackedStringArray("opening_cutscene", "player_default_gamepiece")]
 script = ExtResource("2_bkxev")
+opening_cutscene = NodePath("OpeningCutscene")
 player_controller = ExtResource("2_esa52")
 player_default_gamepiece = NodePath("Map/Player")
 
@@ -326,7 +327,7 @@ script = ExtResource("2_la2p5")
 gameboard_properties = ExtResource("3_esa52")
 
 [node name="Player" parent="Field/Map" instance=ExtResource("11_yntrj")]
-position = Vector2(199, 231)
+position = Vector2(22.4, 214.4)
 animation_scene = ExtResource("12_oablq")
 move_speed = 96.0
 metadata/_edit_group_ = true
