@@ -88,6 +88,7 @@ func setup(arena: PackedScene) -> void:
 	next_round.call_deferred()
 
 
+#TODO: Make this cleanly wrap up the combat state. CAll elsewhere.
 ## Ends combat immediately and gracefully, freeing Combat-related scenes and handing over logic
 ## via the [signal CombatEvents.combat_finished] signal.
 func shutdown() -> void:
@@ -126,6 +127,8 @@ func _select_next_player_action() -> void:
 	# taking action!
 	if remaining_battlers.is_empty():
 		print("No remaining actions, move to execution.")
+		# De-select the last Battler that was receiving orders.
+		CombatEvents.player_battler_selected.emit(null)
 		_play_next_action.call_deferred()
 		return
 	
@@ -138,12 +141,23 @@ func _select_next_player_action() -> void:
 	# to its rest position before moving on to the next battler, hence the await call below.
 	next_player_battler.action_cached.connect(
 		(func _on_selected_battler_action_cached(battler: Battler) -> void:
-			await battler.anim.move_to_rest(0.2)
+			# Check to see if the player cancelled action selection (pressed "back" from the
+			# UIActionMenu). If so, the player wishes to reissue orders for the previous Battler.
+			# If there IS a previous Battler, remove its cached action.
+			if battler.cached_action == null:
+				print("Go to previous Battler")
+				var battlers: = _battler_roster.get_player_battlers()
+				var index: = battlers.find(battler)
+				if index > 0:
+					var previous_battler: Battler = battlers[index-1]
+					previous_battler.cached_action = null
+			
+			await battler.anim.move_to_rest(0.15)
 			_select_next_player_action()
 			).bind(next_player_battler), 
 		CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 	
-	await next_player_battler.anim.move_forward(0.2)
+	await next_player_battler.anim.move_forward(0.15)
 	
 	# Activate the player UI elements for the currently selected battler.
 	CombatEvents.player_battler_selected.emit(next_player_battler)

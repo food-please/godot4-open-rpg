@@ -137,8 +137,8 @@ var is_selectable: bool = true:
 var cached_action: BattlerAction = null:
 	set(value):
 		cached_action = value
-		if cached_action != null:
-			action_cached.emit()
+		action_cached.emit()
+		print("Cache action")
 
 
 static func sort(a: Battler, b: Battler) -> bool:

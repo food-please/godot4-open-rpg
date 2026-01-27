@@ -10,8 +10,6 @@ class_name UIPlayerBattlerList extends VBoxContainer
 @export var battlers: Array[Battler]:
 	set(value):
 		battlers = value
-		print("Battlers for list: ", battlers)
-		
 		if not is_inside_tree():
 			await ready
 		

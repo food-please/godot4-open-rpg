@@ -62,8 +62,9 @@ func setup(battler_data: BattlerRoster) -> void:
 	# hidden.
 	CombatEvents.player_battler_selected.connect(
 		(func _on_player_battler_selected(battler: Battler) -> void:
-			print("Looking for actions: ", battler.actions)
-			choose_action(battler)
+			if battler != null:
+				print("Looking for actions: ", battler.actions)
+				choose_action(battler)
 			)
 			
 			# Player menu. choose actions(action_list)
@@ -109,7 +110,12 @@ func choose_action(battler: Battler) -> void:
 	action_menu.action_selected.connect(
 		(func _on_action_selected(action: BattlerAction, selected_battler: Battler) -> void:
 			if action != null:
-				choose_targets(selected_battler, action)
+				choose_targets.call_deferred(selected_battler, action)
+			
+			# Cache a null action, indicating that the player refused selection and is looking to
+			# choose actions for the previous Battler.
+			else:
+				selected_battler.cached_action = null
 
 			## Whether or not the player selected an action, we'll want to hide the menu.
 			action_menu.queue_free()
@@ -128,20 +134,16 @@ func choose_targets(battler: Battler, action: BattlerAction) -> void:
 	# If targets were chosen, we'll assign the targets to the action and, finally, cache the action
 	# on the selected Battler.
 	# If the user pressed "back", we'll go back to the choose action state.
+	print("Choosing targets!")
 	cursor.targets_selected.connect(
 		(func _on_targets_selected(targets: Array[Battler], selected_action: BattlerAction,
 				selected_battler: Battler) -> void:
+			print("Found targets: ", targets)
 			if not targets.is_empty():
+				_action_description.description = ""
+				
 				selected_action.cached_targets = targets
 				selected_battler.cached_action = selected_action
-				
-				# At this point, the player should have selected a valid action and assigned it
-				# targets, so the action may be cached for whenever the battler is ready.
-				#CombatEvents.action_selected.emit(_selected_action, _selected_battler, targets)
-				#
-				## The player has properly queued an action. Return the UI to the state where the
-				## player will pick a player Battler.
-				#CombatEvents.player_battler_selected.emit(null)
 			
 			else:
 				choose_action(selected_battler)
